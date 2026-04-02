@@ -67,7 +67,6 @@ class HabitQuestApp extends StatelessWidget {
   }
 }
 
-//  MAIN NAVIGATION
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
 
@@ -79,10 +78,10 @@ class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const Center(child: Text('Dashboard')),
-    const Center(child: Text('Missions')),
-    const Center(child: Text('CityScreen')),
-    const Center(child: Text('ProfileScreen')),
+    DashboardScreen(),
+    MissionsScreen(),
+    CityScreen(),
+    ProfileScreen(),
   ];
 
   void _onTabChange(int index) {
