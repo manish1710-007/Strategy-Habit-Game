@@ -1,0 +1,24 @@
+lib/
+ ├── core/
+ │   ├── constants/
+ │   ├── utils/
+ │
+ ├── features/
+ │   ├── habits/
+ │   ├── city/
+ │   ├── dashboard/
+ │   ├── profile/
+ │
+ ├── models/
+ │   ├── habit.dart
+ │   ├── building.dart
+ │
+ ├── services/
+ │   ├── storage_service.dart
+ │   ├── reward_service.dart
+ │
+ ├── ui/
+ │   ├── screens/
+ │   ├── widgets/
+ │
+ └── main.dart
