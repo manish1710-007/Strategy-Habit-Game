@@ -4,6 +4,7 @@ import '../../services/storage_service.dart';
 import '../widgets/habit_card.dart';
 import 'package:uuid/uuid.dart';
 import '../widgets/particle_burst.dart';
+import '../widgets/waifu_character.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -16,6 +17,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final box = StorageService.getHabitBox();
   bool showParticle = false;
   Offset particlePosition = Offset.zero;
+
+  WaifuMood mood = WaifuMood.idle;
 
   List<Habit> habits = [];
 
@@ -58,6 +61,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       habit.completed = true;
       xp += gainedXP;
       energy += habit.difficulty * 5;
+
+      mood = WaifuMood.happy;
       showParticle = true; //  Trigger the particle animation
       particlePosition = position;
     });
@@ -66,6 +71,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Future.delayed(const Duration(milliseconds: 600), () {
       if (mounted) {
         setState(() => showParticle = false);
+        setState(() => mood = WaifuMood.idle);
       }
     });
 
@@ -75,6 +81,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final newLevel = xp ~/ 100 + 1;
 
     if (newLevel > oldLevel) {
+      setState(() => mood = WaifuMood.excited);
       _showLevelUpDialog(newLevel);
     }
   }
@@ -122,6 +129,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     _resourceChip("⚡ Energy", energy, Colors.yellowAccent),
+                    WaifuCharacter(mood:  mood),
                     const SizedBox(width: 20),
                     Expanded(
                       child: _xpBar(xp),
