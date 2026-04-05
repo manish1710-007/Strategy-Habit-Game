@@ -14,4 +14,8 @@ class RewardService {
   static int getCurrentLevelXP(int totalXP) {
     return totalXP % 100; // XP towards next level
   } 
+
+  static int getXPForNextLevel(int level) {
+    return level * 100; // XP needed for next level
+  }
 }

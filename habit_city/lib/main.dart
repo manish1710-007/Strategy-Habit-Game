@@ -32,26 +32,26 @@ class HabitQuestApp extends StatelessWidget {
   ThemeData _buildTheme() {
     return ThemeData(
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: const Color(0xFF0D0D12),
+      scaffoldBackgroundColor: const Color(0xFF0B0B14),
 
-      primaryColor: const Color(0xFF00FFCC),
+      primaryColor: const Color(0xFFFF77E9),
 
       colorScheme: const ColorScheme.dark(
-        primary: Color(0xFF00FFCC),
-        secondary: Color(0xFFFF00FF),
+        primary: Color(0xFFFF77E9),
+        secondary: Color(0xFF7AFBFF),
       ),
 
       fontFamily: 'Roboto',
 
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color(0xFF0D0D12),
+        backgroundColor: Color(0xFF0B0B14),
         elevation: 0,
         centerTitle: true,
       ),
 
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Color(0xFF1A1A24),
-        selectedItemColor: Color(0xFF00FFCC),
+        backgroundColor: Color(0xFF141422),
+        selectedItemColor: Color(0xFFFF77E9),
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
       ),

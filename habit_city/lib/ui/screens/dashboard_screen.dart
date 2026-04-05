@@ -3,6 +3,7 @@ import '../../models/habit.dart';
 import '../../services/storage_service.dart';
 import '../widgets/habit_card.dart';
 import 'package:uuid/uuid.dart';
+import '../widgets/particle_burst.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -13,6 +14,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final box = StorageService.getHabitBox();
+  bool showParticle = false;
 
   List<Habit> habits = [];
 
@@ -53,9 +55,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     setState(() {
       habit.completed = true;
-      xp += habit.difficulty * 10;
+      xp += gainedXP;
       energy += habit.difficulty * 5;
+      showParticle = true; // ✨ Trigger the particle animation
     });
+
+    // Hide after animation
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) {
+        setState(() => showParticle = false);
+      }
+    });
+
+    box.put(habit.id, habit.toMap());
 
     final oldLevel = (xp - gainedXP) ~/ 100 + 1;
     final newLevel = xp ~/ 100 + 1;
@@ -63,8 +75,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (newLevel > oldLevel) {
       _showLevelUpDialog(newLevel);
     }
-
-    box.put(habit.id, habit.toMap());
   }
 
   void _showLevelUpDialog(int level) {
@@ -78,13 +88,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
             "You reached Level $level",
             style: const TextStyle(color: Colors.white),
           ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("Nice!", style: TextStyle(color: Color(0XFF00FFCC))),
-              ),
-            ],
-        );  
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Nice!", style: TextStyle(color: Color(0XFF00FFCC))),
+            ),
+          ],
+        );
       },
     );
   }
@@ -97,42 +107,55 @@ class _DashboardScreenState extends State<DashboardScreen> {
         onPressed: addHabit,
         child: const Icon(Icons.add),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // RESOURCE BAR SECTION
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
+      // UPDATED BODY WRAPPED IN STACK
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
               children: [
-                _resourceChip("⚡ Energy", energy, Colors.yellowAccent),
-                const SizedBox(width: 20), // Spacer between Energy and XP
+                // RESOURCE BAR SECTION
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _resourceChip("⚡ Energy", energy, Colors.yellowAccent),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: _xpBar(xp),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                // HABITS LIST SECTION
                 Expanded(
-                  child: _xpBar(xp),
+                  child: habits.isEmpty
+                      ? const Center(child: Text("No missions yet"))
+                      : ListView.builder(
+                          itemCount: habits.length,
+                          itemBuilder: (context, index) {
+                            final habit = habits[index];
+                            return HabitCard(
+                              habit: habit,
+                              onTap: () => completeHabit(habit),
+                            );
+                          },
+                        ),
                 ),
               ],
             ),
+          ),
 
-            const SizedBox(height: 20),
-
-            // HABITS LIST SECTION
-            Expanded(
-              child: habits.isEmpty
-                  ? const Center(child: Text("No missions yet"))
-                  : ListView.builder(
-                      itemCount: habits.length,
-                      itemBuilder: (context, index) {
-                        final habit = habits[index];
-                        return HabitCard(
-                          habit: habit,
-                          onTap: () => completeHabit(habit),
-                        );
-                      },
-                    ),
+          //  PARTICLE OVERLAY
+          if (showParticle)
+            const Positioned(
+              top: 100,
+              right: 40,
+              child: ParticleBurst(),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -171,7 +194,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: LinearProgressIndicator(
             value: currentXP / 100,
             minHeight: 10,
-            backgroundColor: Colors.grey[300],
+            backgroundColor: Colors.grey[800],
             valueColor: const AlwaysStoppedAnimation(Color(0xFF00FFCC)),
           ),
         ),

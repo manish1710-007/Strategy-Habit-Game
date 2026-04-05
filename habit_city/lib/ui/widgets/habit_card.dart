@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/habit.dart';
 
-class HabitCard extends StatelessWidget {
+class HabitCard extends StatefulWidget {
   final Habit habit;
   final VoidCallback onTap;
 
@@ -12,113 +12,131 @@ class HabitCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final bool isDone = habit.completed;
+  State<HabitCard> createState() => _HabitCardState();
+}
 
-    return AnimatedContainer(
+class _HabitCardState extends State<HabitCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scale;
+
+  bool _animate = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
       duration: const Duration(milliseconds: 300),
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+    );
 
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1A24),
-        borderRadius: BorderRadius.circular(12),
-
-        border: Border.all(
-          color: isDone
-              ? const Color(0xFF00FFCC)
-              : const Color(0xFF2A2A35),
-        ),
-
-        boxShadow: isDone
-            ? [
-                BoxShadow(
-                  color: const Color(0xFF00FFCC).withOpacity(0.4),
-                  blurRadius: 10,
-                  spreadRadius: 1,
-                )
-              ]
-            : [],
-      ),
-
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          //  LEFT SIDE (Title + XP)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                habit.title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: isDone ? Colors.grey : Colors.white,
-                  decoration:
-                      isDone ? TextDecoration.lineThrough : null,
-                ),
-              ),
-
-              const SizedBox(height: 6),
-
-              //  XP + Difficulty
-              Row(
-                children: [
-                  Text(
-                    "+${habit.difficulty * 10} XP",
-                    style: const TextStyle(
-                      color: Color(0xFFFF00FF), // neon magenta
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  _difficultyDots(habit.difficulty),
-                ],
-              ),
-            ],
-          ),
-
-          //  RIGHT SIDE (Action Button)
-          GestureDetector(
-            onTap: onTap,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.all(10),
-
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isDone
-                    ? const Color(0xFF00FFCC)
-                    : Colors.transparent,
-                border: Border.all(
-                  color: const Color(0xFF00FFCC),
-                ),
-              ),
-
-              child: Icon(
-                isDone ? Icons.check : Icons.bolt,
-                color: isDone ? Colors.black : const Color(0xFF00FFCC),
-              ),
-            ),
-          ),
-        ],
-      ),
+    _scale = Tween(begin: 1.0, end: 1.08).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
   }
 
-  //  Difficulty Indicator (dots)
-  Widget _difficultyDots(int level) {
-    return Row(
-      children: List.generate(
-        level,
-        (index) => Container(
-          margin: const EdgeInsets.only(right: 4),
-          width: 6,
-          height: 6,
-          decoration: const BoxDecoration(
-            color: Colors.orangeAccent,
-            shape: BoxShape.circle,
+  void _handleTap() async {
+    if (widget.habit.completed) return;
+
+    setState(() => _animate = true);
+
+    await _controller.forward();
+    await _controller.reverse();
+
+    widget.onTap();
+
+    setState(() => _animate = false);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDone = widget.habit.completed;
+
+    return ScaleTransition(
+      scale: _scale,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.all(16),
+
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+
+          gradient: LinearGradient(
+            colors: isDone
+                ? [
+                    const Color(0xFFFF77E9),
+                    const Color(0xFF7AFBFF),
+                  ]
+                : [
+                    const Color(0xFF1A1A2E),
+                    const Color(0xFF141422),
+                  ],
           ),
+
+          boxShadow: _animate || isDone
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFFFF77E9).withOpacity(0.6),
+                    blurRadius: 20,
+                    spreadRadius: 2,
+                  ),
+                ]
+              : [],
+        ),
+
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // TEXT
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.habit.title,
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    decoration:
+                        isDone ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  "+${widget.habit.difficulty * 10} XP",
+                  style: const TextStyle(
+                    color: Color(0xFF7AFBFF),
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+
+            // BUTTON
+            GestureDetector(
+              onTap: _handleTap,
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isDone
+                      ? Colors.white
+                      : const Color(0xFFFF77E9),
+                ),
+                child: Icon(
+                  isDone ? Icons.check : Icons.flash_on,
+                  color: isDone ? Colors.black : Colors.white,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
