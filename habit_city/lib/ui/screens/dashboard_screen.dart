@@ -15,6 +15,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final box = StorageService.getHabitBox();
   bool showParticle = false;
+  Offset particlePosition = Offset.zero;
 
   List<Habit> habits = [];
 
@@ -48,7 +49,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     loadHabits();
   }
 
-  void completeHabit(Habit habit) {
+  void completeHabit(Habit habit, Offset position) async {
     if (habit.completed) return;
 
     final gainedXP = habit.difficulty * 10;
@@ -57,7 +58,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       habit.completed = true;
       xp += gainedXP;
       energy += habit.difficulty * 5;
-      showParticle = true; // ✨ Trigger the particle animation
+      showParticle = true; //  Trigger the particle animation
+      particlePosition = position;
     });
 
     // Hide after animation
@@ -139,7 +141,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             final habit = habits[index];
                             return HabitCard(
                               habit: habit,
-                              onTap: () => completeHabit(habit),
+                              onTapWithPosition: (pos) => completeHabit(habit, pos),
                             );
                           },
                         ),
@@ -150,10 +152,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           //  PARTICLE OVERLAY
           if (showParticle)
-            const Positioned(
-              top: 100,
-              right: 40,
-              child: ParticleBurst(),
+            Positioned(
+              left: particlePosition.dx - 20,
+              top: particlePosition.dy - 80,
+              child: const ParticleBurst(),
             ),
         ],
       ),

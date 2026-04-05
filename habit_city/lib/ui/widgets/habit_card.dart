@@ -3,12 +3,12 @@ import '../../models/habit.dart';
 
 class HabitCard extends StatefulWidget {
   final Habit habit;
-  final VoidCallback onTap;
+  final Function(Offset) onTapWithPosition;
 
   const HabitCard({
     super.key,
     required this.habit,
-    required this.onTap,
+    required this.onTapWithPosition,
   });
 
   @override
@@ -36,7 +36,7 @@ class _HabitCardState extends State<HabitCard>
     );
   }
 
-  void _handleTap() async {
+  void _handleTap(TapDownDetails details) async {
     if (widget.habit.completed) return;
 
     setState(() => _animate = true);
@@ -44,7 +44,7 @@ class _HabitCardState extends State<HabitCard>
     await _controller.forward();
     await _controller.reverse();
 
-    widget.onTap();
+    widget.onTapWithPosition(details.globalPosition);
 
     setState(() => _animate = false);
   }
@@ -121,7 +121,11 @@ class _HabitCardState extends State<HabitCard>
 
             // BUTTON
             GestureDetector(
-              onTap: _handleTap,
+              onTapDown: (details) {
+                final position = details.globalPosition;
+                widget.onTapWithPosition(position);
+              },
+
               child: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
