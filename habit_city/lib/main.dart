@@ -4,16 +4,26 @@ import 'package:flutter/material.dart';
 import 'services/storage_service.dart';
 
 // Screens
+import 'ui/screens/home_screen.dart';
 import 'ui/screens/dashboard_screen.dart';
 import 'ui/screens/missions_screen.dart';
 import 'ui/screens/city_screen.dart';
 import 'ui/screens/profile_screen.dart';
+import 'package:provider/provider.dart';
+import 'core/app_state.dart';
+
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await StorageService.init();
 
-  runApp(const HabitQuestApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => AppState(),
+      child: const HabitQuestApp(),
+    ),
+  );
 }
 
 class HabitQuestApp extends StatelessWidget {
@@ -67,6 +77,7 @@ class HabitQuestApp extends StatelessWidget {
   }
 }
 
+//  MAIN NAVIGATION
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
 
@@ -77,29 +88,47 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    DashboardScreen(),
-    MissionsScreen(),
-    CityScreen(),
-    ProfileScreen(),
-  ];
-
-  void _onTabChange(int index) {
+  //  Navigation handler
+  void switchTab(int index) {
     setState(() {
       _currentIndex = index;
     });
   }
 
+  List<Widget> _buildScreens() {
+    return [
+      HomeScreen(onNavigate: switchTab), // 0
+      const DashboardScreen(),           // 1
+      const MissionsScreen(),            // 2
+      const CityScreen(),                // 3
+      const ProfileScreen(),             // 4
+    ];
+  }
+
+  void _onTabChange(int index) {
+    // Bottom nav maps to:
+    // 0 -> Dashboard
+    // 1 -> Missions
+    // 2 -> City
+    // 3 -> Profile
+
+    setState(() {
+      _currentIndex = index + 1; // 👈 shift because Home is index 0
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final screens = _buildScreens();
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _screens,
+        children: screens,
       ),
 
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
+        currentIndex: _currentIndex == 0 ? 0 : _currentIndex - 1,
         onTap: _onTabChange,
         items: const [
           BottomNavigationBarItem(

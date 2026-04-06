@@ -199,7 +199,7 @@ class MissionsScreen extends StatelessWidget {
                     Icon(Icons.swipe_rounded, color: _liteBlue.withOpacity(0.8), size: 16),
                     const SizedBox(width: 8),
                     Text(
-                      "SWIPE MISSIONS COMING SOON",
+                      "",
                       style: TextStyle(
                         color: _white.withOpacity(0.6),
                         fontSize: 10,
