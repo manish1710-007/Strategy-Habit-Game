@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 
 class CityScreen extends StatefulWidget {
-  const CityScreen({super.key});
+  // 1. Add the onNavigate callback
+  final Function(int) onNavigate;
+
+  const CityScreen({
+    super.key,
+    required this.onNavigate, // Make it required
+  });
 
   @override
   State<CityScreen> createState() => _CityScreenState();
@@ -159,21 +165,21 @@ class _CityScreenState extends State<CityScreen>
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
-                  Container(
-                    width: 36, height: 36,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [_purple, _pink],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                  // 2. Updated Home Button
+                  GestureDetector(
+                    onTap: () => widget.onNavigate(0), // Navigates to Home
+                    child: Container(
+                      width: 36, height: 36,
+                      decoration: BoxDecoration(
+                        color: _red, // Consistent red home button
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(color: _red.withOpacity(0.7), blurRadius: 10),
+                        ],
                       ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(color: _purple.withOpacity(0.7), blurRadius: 10),
-                      ],
+                      child: const Icon(Icons.home_rounded,
+                          color: Colors.white, size: 18),
                     ),
-                    child: const Icon(Icons.location_city_rounded,
-                        color: Colors.white, size: 18),
                   ),
                   const SizedBox(width: 12),
                   const Text(

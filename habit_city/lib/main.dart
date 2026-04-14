@@ -12,8 +12,6 @@ import 'ui/screens/profile_screen.dart';
 import 'package:provider/provider.dart';
 import 'core/app_state.dart';
 
-
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await StorageService.init();
@@ -43,29 +41,23 @@ class HabitQuestApp extends StatelessWidget {
     return ThemeData(
       brightness: Brightness.dark,
       scaffoldBackgroundColor: const Color(0xFF0B0B14),
-
       primaryColor: const Color(0xFFFF77E9),
-
       colorScheme: const ColorScheme.dark(
         primary: Color(0xFFFF77E9),
         secondary: Color(0xFF7AFBFF),
       ),
-
       fontFamily: 'Roboto',
-
       appBarTheme: const AppBarTheme(
         backgroundColor: Color(0xFF0B0B14),
         elevation: 0,
         centerTitle: true,
       ),
-
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: Color(0xFF141422),
         selectedItemColor: Color(0xFFFF77E9),
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
       ),
-
       cardTheme: CardThemeData(
         color: const Color(0xFF1A1A24),
         shape: RoundedRectangleBorder(
@@ -95,23 +87,12 @@ class _MainNavigationState extends State<MainNavigation> {
     });
   }
 
-  List<Widget> _buildScreens() {
-    return [
-      HomeScreen(onNavigate: switchTab), // 0
-      const DashboardScreen(),           // 1
-      const MissionsScreen(),            // 2
-      const CityScreen(),                // 3
-      const ProfileScreen(),             // 4
-    ];
-  }
-
   void _onTabChange(int index) {
     // Bottom nav maps to:
-    // 0 -> Dashboard
-    // 1 -> Missions
-    // 2 -> City
-    // 3 -> Profile
-
+    // 0 -> Dashboard (Index 1 in stack)
+    // 1 -> Missions   (Index 2 in stack)
+    // 2 -> City       (Index 3 in stack)
+    // 3 -> Profile    (Index 4 in stack)
     setState(() {
       _currentIndex = index + 1; // 👈 shift because Home is index 0
     });
@@ -119,26 +100,36 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    final screens = _buildScreens();
-
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: screens,
+        children: [
+          // Index 0: Home
+          HomeScreen(onNavigate: switchTab),
+          
+          // Index 1: Dashboard
+          DashboardScreen(onNavigate: switchTab), 
+          
+          // Index 2: Missions
+          MissionsScreen(onNavigate: switchTab),
+          
+          // Index 3: City
+          CityScreen(onNavigate: switchTab),
+          
+          // Index 4: Profile
+          ProfileScreen(onNavigate: switchTab),
+        ],
       ),
-
       bottomNavigationBar: BottomNavigationBar(
+        // If we are on Home (index 0), select the first tab (Dashboard) visually,
+        // otherwise select the current tab - 1.
         currentIndex: _currentIndex == 0 ? 0 : _currentIndex - 1,
         onTap: _onTabChange,
         items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard), label: 'Dash'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.flag), label: 'Missions'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.location_city), label: 'City'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.person), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dash'),
+          BottomNavigationBarItem(icon: Icon(Icons.flag), label: 'Missions'),
+          BottomNavigationBarItem(icon: Icon(Icons.location_city), label: 'City'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );

@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 
 class MissionsScreen extends StatelessWidget {
-  const MissionsScreen({super.key});
+  // 1. Add the onNavigate callback
+  final Function(int) onNavigate;
+  
+  const MissionsScreen({
+    super.key, 
+    required this.onNavigate, // Make it required
+  });
 
   //  Palette (matches dashboard) 
   static const _black      = Color(0xFF0A0008);
@@ -102,14 +108,18 @@ class MissionsScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
-                  Container(
-                    width: 36, height: 36,
-                    decoration: BoxDecoration(
-                      color: _purple,
-                      shape: BoxShape.circle,
-                      boxShadow: [BoxShadow(color: _purple.withOpacity(0.7), blurRadius: 10)],
+                  // 2. Updated Home Button
+                  GestureDetector(
+                    onTap: () => onNavigate(0), // Navigates to Home
+                    child: Container(
+                      width: 36, height: 36,
+                      decoration: BoxDecoration(
+                        color: _red,
+                        shape: BoxShape.circle,
+                        boxShadow: [BoxShadow(color: _red.withOpacity(0.7), blurRadius: 10)],
+                      ),
+                      child: const Icon(Icons.home_rounded, color: Colors.white, size: 18),
                     ),
-                    child: const Icon(Icons.flag_rounded, color: Colors.white, size: 18),
                   ),
                   const SizedBox(width: 12),
                   const Text(
