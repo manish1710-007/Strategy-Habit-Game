@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
 class CityScreen extends StatefulWidget {
-  // 1. Add the onNavigate callback
   final Function(int) onNavigate;
 
   const CityScreen({
     super.key,
-    required this.onNavigate, // Make it required
+    required this.onNavigate, 
   });
 
   @override
@@ -16,25 +15,23 @@ class CityScreen extends StatefulWidget {
 class _CityScreenState extends State<CityScreen>
     with SingleTickerProviderStateMixin {
 
-  //  Palette 
-  static const _black      = Color(0xFF0A0008);
-  static const _deepPurple = Color(0xFF2D0057);
-  static const _purple     = Color(0xFF7B2FBE);
-  static const _red        = Color(0xFFCC1C3A);
-  static const _liteBlue   = Color(0xFF6EC6F5);
-  static const _pink       = Color(0xFFE040FB);
-  static const _white      = Color(0xFFF0E6FF);
+  // 🎨 Retro Futuristic Palette 
+  static const _black    = Color(0xFF050508); 
+  static const _void     = Color(0xFF0A0D14); 
+  static const _neonBlue = Color(0xFF00F0FF); 
+  static const _neonRed  = Color(0xFFFF003C); 
+  static const _white    = Color(0xFFE0E5FF); 
 
-  //  City data 
+  // City data (Zeroed out per request)
   final List<_CityData> _cities = [
     _CityData(
       name: "Gym",
       emoji: "🏋️",
       icon: Icons.fitness_center_rounded,
       desc: "Train your body. Build raw power.",
-      color: Colors.orangeAccent,
-      level: 3,
-      progress: 0.65,
+      color: const Color(0xFFFF003C), // Neon Red
+      level: 0,
+      progress: 0.0,
       tag: "BODY",
     ),
     _CityData(
@@ -42,9 +39,9 @@ class _CityScreenState extends State<CityScreen>
       emoji: "📚",
       icon: Icons.menu_book_rounded,
       desc: "Expand your knowledge every day.",
-      color: const Color(0xFF6EC6F5),
-      level: 5,
-      progress: 0.40,
+      color: const Color(0xFF00F0FF), // Neon Cyan
+      level: 0,
+      progress: 0.0,
       tag: "KNOWLEDGE",
     ),
     _CityData(
@@ -52,9 +49,9 @@ class _CityScreenState extends State<CityScreen>
       emoji: "🧠",
       icon: Icons.self_improvement_rounded,
       desc: "Meditate, reflect, stay sharp.",
-      color: const Color(0xFFE040FB),
-      level: 2,
-      progress: 0.20,
+      color: const Color(0xFFFF00FF), // Magenta
+      level: 0,
+      progress: 0.0,
       tag: "MENTAL",
     ),
     _CityData(
@@ -62,40 +59,10 @@ class _CityScreenState extends State<CityScreen>
       emoji: "❤️",
       icon: Icons.favorite_rounded,
       desc: "Sleep, hydration, and nutrition.",
-      color: const Color(0xFFCC1C3A),
-      level: 4,
-      progress: 0.80,
+      color: const Color(0xFF00FFAA), // Neon Green
+      level: 0,
+      progress: 0.0,
       tag: "HEALTH",
-    ),
-    _CityData(
-      name: "Study",
-      emoji: "✏️",
-      icon: Icons.school_rounded,
-      desc: "Deep work sessions and skill mastery.",
-      color: Colors.greenAccent,
-      level: 1,
-      progress: 0.10,
-      tag: "SKILL",
-    ),
-    _CityData(
-      name: "Focus",
-      emoji: "🎯",
-      icon: Icons.track_changes_rounded,
-      desc: "Lock in. No distractions. Pure output.",
-      color: Colors.yellowAccent,
-      level: 2,
-      progress: 0.35,
-      tag: "FLOW",
-    ),
-    _CityData(
-      name: "Hobby",
-      emoji: "🎨",
-      icon: Icons.palette_rounded,
-      desc: "Create for joy. Explore your passions.",
-      color: const Color(0xFF7B2FBE),
-      level: 1,
-      progress: 0.55,
-      tag: "CREATIVE",
     ),
   ];
 
@@ -105,12 +72,14 @@ class _CityScreenState extends State<CityScreen>
   @override
   void initState() {
     super.initState();
+    // Faster, breathing pulse for the living city
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 3),
+      duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
-    _pulseAnim = Tween<double>(begin: 0.85, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    
+    _pulseAnim = Tween<double>(begin: 0.4, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOutSine),
     );
   }
 
@@ -148,42 +117,41 @@ class _CityScreenState extends State<CityScreen>
     return Scaffold(
       backgroundColor: _black,
 
-      //  AppBar 
+      // AppBar 
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(64),
         child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [_black, _deepPurple],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-            border: Border(bottom: BorderSide(color: _purple, width: 2)),
+          decoration: BoxDecoration(
+            color: _black.withOpacity(0.9),
+            border: const Border(bottom: BorderSide(color: _neonBlue, width: 1.5)),
+            boxShadow: [
+              BoxShadow(color: _neonBlue.withOpacity(0.2), blurRadius: 15, spreadRadius: 1)
+            ]
           ),
           child: SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
-                  // 2. Updated Home Button
+                  // Home Button
                   GestureDetector(
-                    onTap: () => widget.onNavigate(0), // Navigates to Home
+                    onTap: () => widget.onNavigate(0), 
                     child: Container(
                       width: 36, height: 36,
                       decoration: BoxDecoration(
-                        color: _red, // Consistent red home button
+                        color: _black,
+                        border: Border.all(color: _neonRed, width: 1.5),
                         shape: BoxShape.circle,
                         boxShadow: [
-                          BoxShadow(color: _red.withOpacity(0.7), blurRadius: 10),
+                          BoxShadow(color: _neonRed.withOpacity(0.5), blurRadius: 10),
                         ],
                       ),
-                      child: const Icon(Icons.home_rounded,
-                          color: Colors.white, size: 18),
+                      child: const Icon(Icons.home_rounded, color: _neonRed, size: 18),
                     ),
                   ),
                   const SizedBox(width: 12),
                   const Text(
-                    "YOUR CITY",
+                    "CITY GRID",
                     style: TextStyle(
                       color: _white,
                       fontWeight: FontWeight.w900,
@@ -194,18 +162,16 @@ class _CityScreenState extends State<CityScreen>
                   const Spacer(),
                   // City count
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: _purple.withOpacity(0.15),
+                      color: _neonBlue.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(50),
-                      border: Border.all(
-                          color: _purple.withOpacity(0.4), width: 1),
+                      border: Border.all(color: _neonBlue.withOpacity(0.5), width: 1),
                     ),
                     child: Text(
                       "${_cities.length} DISTRICTS",
                       style: const TextStyle(
-                        color: _purple,
+                        color: _neonBlue,
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1.5,
@@ -221,25 +187,23 @@ class _CityScreenState extends State<CityScreen>
 
       body: Stack(
         children: [
-          // Background
-          Positioned.fill(child: CustomPaint(painter: _CityBgPainter())),
+          // Cyber Background
+          Positioned.fill(child: CustomPaint(painter: _CyberGridPainter())),
 
           CustomScrollView(
             slivers: [
-
-              //  City skyline hero 
+              // City skyline hero 
               SliverToBoxAdapter(
                 child: _CitySkylineBanner(
                   totalCities: _cities.length,
-                  avgLevel: (_cities.fold(0, (s, c) => s + c.level) /
-                      _cities.length).toStringAsFixed(1),
+                  avgLevel: "0.0", // Hardcoded to 0 for fresh start
                   pulseAnim: _pulseAnim,
                 ),
               ),
 
               const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
-              //  Section label 
+              // Section label 
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -248,13 +212,14 @@ class _CityScreenState extends State<CityScreen>
                       Container(
                         width: 3, height: 16,
                         decoration: BoxDecoration(
-                          color: _liteBlue,
+                          color: _neonRed,
                           borderRadius: BorderRadius.circular(2),
+                          boxShadow: [BoxShadow(color: _neonRed.withOpacity(0.8), blurRadius: 6)],
                         ),
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        "DISTRICTS",
+                        "ACTIVE DISTRICTS",
                         style: TextStyle(
                           color: _white.withOpacity(0.55),
                           fontSize: 11,
@@ -269,7 +234,7 @@ class _CityScreenState extends State<CityScreen>
 
               const SliverToBoxAdapter(child: SizedBox(height: 12)),
 
-              //  NEW CITY tile (top) 
+              // NEW CITY tile (top) 
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -279,21 +244,26 @@ class _CityScreenState extends State<CityScreen>
 
               const SliverToBoxAdapter(child: SizedBox(height: 10)),
 
-              //  City grid 
+              // City grid 
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                 sliver: SliverGrid(
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    childAspectRatio: 0.82,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 0.85, // Slightly sleeker proportion
                   ),
                   delegate: SliverChildBuilderDelegate(
-                    (context, index) => _CityTile(
-                      data: _cities[index],
-                      onTap: () => _openCity(_cities[index]),
+                    (context, index) => AnimatedBuilder(
+                      animation: _pulseAnim,
+                      builder: (context, child) {
+                        return _CityTile(
+                          data: _cities[index],
+                          pulseValue: _pulseAnim.value,
+                          onTap: () => _openCity(_cities[index]),
+                        );
+                      }
                     ),
                     childCount: _cities.length,
                   ),
@@ -307,18 +277,16 @@ class _CityScreenState extends State<CityScreen>
   }
 }
 
-//  City skyline banner 
+// City skyline banner 
 class _CitySkylineBanner extends StatelessWidget {
   final int totalCities;
   final String avgLevel;
   final Animation<double> pulseAnim;
 
-  static const _deepPurple = Color(0xFF2D0057);
-  static const _purple     = Color(0xFF7B2FBE);
-  static const _red        = Color(0xFFCC1C3A);
-  static const _liteBlue   = Color(0xFF6EC6F5);
-  static const _pink       = Color(0xFFE040FB);
-  static const _white      = Color(0xFFF0E6FF);
+  static const _void     = Color(0xFF0A0D14); 
+  static const _neonBlue = Color(0xFF00F0FF); 
+  static const _neonRed  = Color(0xFFFF003C); 
+  static const _white    = Color(0xFFE0E5FF); 
 
   const _CitySkylineBanner({
     required this.totalCities,
@@ -330,23 +298,19 @@ class _CitySkylineBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      height: 140,
+      height: 130, // Slightly slimmer
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1E0040), Color(0xFF0D001A)],
-        ),
-        border: Border.all(color: _purple.withOpacity(0.4), width: 1.5),
+        borderRadius: BorderRadius.circular(20),
+        color: _void,
+        border: Border.all(color: _neonBlue.withOpacity(0.3), width: 1.5),
         boxShadow: [
-          BoxShadow(color: _purple.withOpacity(0.2), blurRadius: 24),
+          BoxShadow(color: _neonBlue.withOpacity(0.15), blurRadius: 24),
         ],
       ),
       child: Stack(
         children: [
-          // Speed lines
+          // Cyber lines
           Positioned.fill(
             child: CustomPaint(painter: _BannerLinePainter()),
           ),
@@ -366,13 +330,13 @@ class _CitySkylineBanner extends StatelessWidget {
             child: AnimatedBuilder(
               animation: pulseAnim,
               builder: (_, __) => Transform.scale(
-                scale: pulseAnim.value,
+                scale: 0.8 + (pulseAnim.value * 0.2),
                 child: Container(
                   width: 70, height: 70,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: RadialGradient(colors: [
-                      _pink.withOpacity(0.18),
+                      _neonRed.withOpacity(0.2 * pulseAnim.value),
                       Colors.transparent,
                     ]),
                   ),
@@ -382,7 +346,7 @@ class _CitySkylineBanner extends StatelessWidget {
           ),
 
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -392,19 +356,19 @@ class _CitySkylineBanner extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      "HABIT CITY",
+                      "HABIT METROPOLIS",
                       style: TextStyle(
                         color: _white,
                         fontWeight: FontWeight.w900,
-                        fontSize: 20,
+                        fontSize: 18,
                         letterSpacing: 4,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "Build your empire. One habit at a time.",
+                      "Complete protocols to evolve the grid.",
                       style: TextStyle(
-                        color: _liteBlue.withOpacity(0.7),
+                        color: _neonBlue.withOpacity(0.7),
                         fontSize: 10,
                         letterSpacing: 1.5,
                         fontWeight: FontWeight.w600,
@@ -419,17 +383,17 @@ class _CitySkylineBanner extends StatelessWidget {
                     _BannerStat(
                         label: "DISTRICTS",
                         value: "$totalCities",
-                        color: _liteBlue),
+                        color: _neonBlue),
                     const SizedBox(width: 10),
                     _BannerStat(
                         label: "AVG LEVEL",
                         value: avgLevel,
-                        color: _pink),
+                        color: _neonRed),
                     const SizedBox(width: 10),
                     _BannerStat(
                         label: "STATUS",
-                        value: "ACTIVE",
-                        color: Colors.greenAccent),
+                        value: "AWAITING DATA",
+                        color: Colors.amberAccent),
                   ],
                 ),
               ],
@@ -451,7 +415,7 @@ class _BannerStat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: color.withOpacity(0.08),
         borderRadius: BorderRadius.circular(50),
@@ -465,16 +429,16 @@ class _BannerStat extends StatelessWidget {
             style: TextStyle(
               color: color,
               fontWeight: FontWeight.w900,
-              fontSize: 12,
+              fontSize: 11,
             ),
           ),
           const SizedBox(width: 5),
           Text(
             label,
             style: TextStyle(
-              color: color.withOpacity(0.6),
-              fontSize: 9,
-              fontWeight: FontWeight.w700,
+              color: color.withOpacity(0.8),
+              fontSize: 8,
+              fontWeight: FontWeight.w800,
               letterSpacing: 1,
             ),
           ),
@@ -484,13 +448,12 @@ class _BannerStat extends StatelessWidget {
   }
 }
 
-//  New city tile (top CTA) 
+// New city tile (top CTA) - Slimmer and smoother
 class _NewCityTile extends StatelessWidget {
   final VoidCallback onTap;
 
-  static const _purple   = Color(0xFF7B2FBE);
-  static const _liteBlue = Color(0xFF6EC6F5);
-  static const _white    = Color(0xFFF0E6FF);
+  static const _neonBlue = Color(0xFF00F0FF);
+  static const _void     = Color(0xFF0A0D14);
 
   const _NewCityTile({required this.onTap});
 
@@ -499,40 +462,24 @@ class _NewCityTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 60,
+        height: 50, // Slimmer height
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: _liteBlue.withOpacity(0.45),
-            width: 1.5,
-          ),
-          gradient: LinearGradient(
-            colors: [
-              _purple.withOpacity(0.08),
-              _liteBlue.withOpacity(0.06),
-            ],
-          ),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _neonBlue.withOpacity(0.5), width: 1.5),
+          color: _void,
           boxShadow: [
-            BoxShadow(color: _liteBlue.withOpacity(0.08), blurRadius: 16),
+            BoxShadow(color: _neonBlue.withOpacity(0.15), blurRadius: 12),
           ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 32, height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _liteBlue.withOpacity(0.12),
-                border: Border.all(color: _liteBlue.withOpacity(0.4), width: 1),
-              ),
-              child: Icon(Icons.add_rounded, color: _liteBlue, size: 18),
-            ),
-            const SizedBox(width: 12),
+            Icon(Icons.add_box_rounded, color: _neonBlue, size: 20),
+            const SizedBox(width: 10),
             Text(
-              "FOUND A NEW DISTRICT",
+              "INITIALIZE NEW DISTRICT",
               style: TextStyle(
-                color: _liteBlue.withOpacity(0.9),
+                color: _neonBlue.withOpacity(0.9),
                 fontWeight: FontWeight.w800,
                 fontSize: 12,
                 letterSpacing: 2,
@@ -545,57 +492,62 @@ class _NewCityTile extends StatelessWidget {
   }
 }
 
-//  City tile 
+// City tile - with dynamic pulse value
 class _CityTile extends StatelessWidget {
   final _CityData data;
+  final double pulseValue;
   final VoidCallback onTap;
 
-  static const _deepPurple = Color(0xFF2D0057);
-  static const _purple     = Color(0xFF7B2FBE);
-  static const _white      = Color(0xFFF0E6FF);
+  static const _void  = Color(0xFF0A0D14);
+  static const _white = Color(0xFFE0E5FF);
 
-  const _CityTile({required this.data, required this.onTap});
+  const _CityTile({
+    required this.data, 
+    required this.pulseValue, 
+    required this.onTap
+  });
 
   @override
   Widget build(BuildContext context) {
+    // Determine dynamic glow based on the pulse animation
+    final double currentGlow = 4 + (12 * pulseValue);
+    
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              _deepPurple.withOpacity(0.7),
-              Colors.black.withOpacity(0.5),
-            ],
-          ),
+          borderRadius: BorderRadius.circular(16),
+          color: _void,
           border: Border.all(
-            color: data.color.withOpacity(0.35),
+            color: data.color.withOpacity(0.4 + (0.2 * pulseValue)),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: data.color.withOpacity(0.12),
-              blurRadius: 16,
-              spreadRadius: -2,
+              color: data.color.withOpacity(0.15 * pulseValue),
+              blurRadius: currentGlow,
+              spreadRadius: 0,
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           child: Stack(
             children: [
-              // Corner halftone
-              Positioned(
-                top: 0, right: 0,
-                width: 60, height: 60,
-                child: CustomPaint(
-                  painter: _SmallHalftonePainter(
-                    color: data.color.withOpacity(0.12),
+              // Subtle colored background gradient
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        data.color.withOpacity(0.1 * pulseValue),
+                        Colors.transparent,
+                      ]
+                    )
                   ),
-                ),
+                )
               ),
 
               Padding(
@@ -603,38 +555,28 @@ class _CityTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     // Icon + level badge row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Container(
-                          width: 48, height: 48,
+                          width: 44, height: 44,
                           decoration: BoxDecoration(
                             color: data.color.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                                color: data.color.withOpacity(0.4), width: 1.2),
-                            boxShadow: [
-                              BoxShadow(
-                                  color: data.color.withOpacity(0.2),
-                                  blurRadius: 10),
-                            ],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: data.color.withOpacity(0.5), width: 1.2),
                           ),
                           child: Center(
-                            child: Text(data.emoji,
-                                style: const TextStyle(fontSize: 22)),
+                            child: Text(data.emoji, style: const TextStyle(fontSize: 20)),
                           ),
                         ),
                         // Level badge
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
-                            color: data.color.withOpacity(0.12),
+                            color: data.color.withOpacity(0.15),
                             borderRadius: BorderRadius.circular(50),
-                            border: Border.all(
-                                color: data.color.withOpacity(0.4), width: 1),
+                            border: Border.all(color: data.color.withOpacity(0.5), width: 1),
                           ),
                           child: Text(
                             "LV.${data.level}",
@@ -649,7 +591,7 @@ class _CityTile extends StatelessWidget {
                       ],
                     ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
 
                     // Name
                     Text(
@@ -660,6 +602,8 @@ class _CityTile extends StatelessWidget {
                         fontSize: 13,
                         letterSpacing: 1.5,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
 
                     const SizedBox(height: 4),
@@ -668,9 +612,9 @@ class _CityTile extends StatelessWidget {
                     Text(
                       data.desc,
                       style: TextStyle(
-                        color: _white.withOpacity(0.4),
+                        color: _white.withOpacity(0.5),
                         fontSize: 10,
-                        height: 1.4,
+                        height: 1.3,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -680,13 +624,11 @@ class _CityTile extends StatelessWidget {
 
                     // Tag pill
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: data.color.withOpacity(0.08),
+                        color: data.color.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(50),
-                        border: Border.all(
-                            color: data.color.withOpacity(0.3), width: 1),
+                        border: Border.all(color: data.color.withOpacity(0.3), width: 1),
                       ),
                       child: Text(
                         data.tag,
@@ -711,7 +653,7 @@ class _CityTile extends StatelessWidget {
                             Text(
                               "PROGRESS",
                               style: TextStyle(
-                                color: _white.withOpacity(0.3),
+                                color: _white.withOpacity(0.4),
                                 fontSize: 8,
                                 letterSpacing: 2,
                                 fontWeight: FontWeight.w700,
@@ -720,7 +662,7 @@ class _CityTile extends StatelessWidget {
                             Text(
                               "${(data.progress * 100).round()}%",
                               style: TextStyle(
-                                color: data.color.withOpacity(0.8),
+                                color: data.color,
                                 fontSize: 9,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -732,10 +674,9 @@ class _CityTile extends StatelessWidget {
                           borderRadius: BorderRadius.circular(50),
                           child: LinearProgressIndicator(
                             value: data.progress,
-                            minHeight: 5,
-                            backgroundColor: data.color.withOpacity(0.1),
-                            valueColor:
-                                AlwaysStoppedAnimation(data.color),
+                            minHeight: 4,
+                            backgroundColor: data.color.withOpacity(0.15),
+                            valueColor: AlwaysStoppedAnimation(data.color),
                           ),
                         ),
                       ],
@@ -751,15 +692,13 @@ class _CityTile extends StatelessWidget {
   }
 }
 
-//  City detail bottom sheet 
+// City detail bottom sheet 
 class _CityDetailSheet extends StatelessWidget {
   final _CityData city;
 
-  static const _black      = Color(0xFF0A0008);
-  static const _deepPurple = Color(0xFF2D0057);
-  static const _purple     = Color(0xFF7B2FBE);
-  static const _white      = Color(0xFFF0E6FF);
-  static const _liteBlue   = Color(0xFF6EC6F5);
+  static const _black    = Color(0xFF050508);
+  static const _white    = Color(0xFFE0E5FF);
+  static const _neonBlue = Color(0xFF00F0FF);
 
   const _CityDetailSheet({required this.city});
 
@@ -769,30 +708,27 @@ class _CityDetailSheet extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F0018),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: city.color.withOpacity(0.4), width: 1.5),
+        color: _black,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: city.color.withOpacity(0.5), width: 1.5),
         boxShadow: [
-          BoxShadow(
-              color: city.color.withOpacity(0.2), blurRadius: 30),
+          BoxShadow(color: city.color.withOpacity(0.2), blurRadius: 30),
         ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           // Handle
           Center(
             child: Container(
               width: 40, height: 4,
               decoration: BoxDecoration(
-                color: city.color.withOpacity(0.3),
+                color: city.color.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
-
           const SizedBox(height: 20),
 
           // Header
@@ -803,16 +739,13 @@ class _CityDetailSheet extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: city.color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                      color: city.color.withOpacity(0.4), width: 1.5),
+                  border: Border.all(color: city.color.withOpacity(0.5), width: 1.5),
                   boxShadow: [
-                    BoxShadow(
-                        color: city.color.withOpacity(0.25), blurRadius: 16),
+                    BoxShadow(color: city.color.withOpacity(0.3), blurRadius: 16),
                   ],
                 ),
                 child: Center(
-                  child: Text(city.emoji,
-                      style: const TextStyle(fontSize: 28)),
+                  child: Text(city.emoji, style: const TextStyle(fontSize: 28)),
                 ),
               ),
               const SizedBox(width: 16),
@@ -833,7 +766,7 @@ class _CityDetailSheet extends StatelessWidget {
                     Text(
                       city.desc,
                       style: TextStyle(
-                        color: _white.withOpacity(0.5),
+                        color: _white.withOpacity(0.6),
                         fontSize: 12,
                       ),
                     ),
@@ -845,14 +778,10 @@ class _CityDetailSheet extends StatelessWidget {
                 width: 52, height: 52,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: RadialGradient(colors: [
-                    city.color.withOpacity(0.3),
-                    city.color.withOpacity(0.05),
-                  ]),
+                  color: city.color.withOpacity(0.1),
                   border: Border.all(color: city.color, width: 2),
                   boxShadow: [
-                    BoxShadow(
-                        color: city.color.withOpacity(0.4), blurRadius: 14),
+                    BoxShadow(color: city.color.withOpacity(0.4), blurRadius: 14),
                   ],
                 ),
                 child: Center(
@@ -875,9 +804,9 @@ class _CityDetailSheet extends StatelessWidget {
 
           // Progress section
           Text(
-            "DISTRICT PROGRESS",
+            "UPGRADE PROTOCOL",
             style: TextStyle(
-              color: _white.withOpacity(0.35),
+              color: _white.withOpacity(0.4),
               fontSize: 10,
               letterSpacing: 3,
               fontWeight: FontWeight.w700,
@@ -891,33 +820,23 @@ class _CityDetailSheet extends StatelessWidget {
               return Expanded(
                 child: Container(
                   margin: EdgeInsets.only(right: i < 9 ? 3 : 0),
-                  height: 10,
+                  height: 8,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(3),
-                    color: filled
-                        ? city.color
-                        : city.color.withOpacity(0.08),
-                    boxShadow: filled
-                        ? [
-                            BoxShadow(
-                              color: city.color.withOpacity(0.4),
-                              blurRadius: 6,
-                            )
-                          ]
-                        : null,
+                    borderRadius: BorderRadius.circular(2),
+                    color: filled ? city.color : city.color.withOpacity(0.1),
+                    boxShadow: filled ? [BoxShadow(color: city.color.withOpacity(0.5), blurRadius: 6)] : null,
                   ),
                 ),
               );
             }),
           ),
-
           const SizedBox(height: 6),
           Align(
             alignment: Alignment.centerRight,
             child: Text(
               "${(city.progress * 100).round()}% to LV.${city.level + 1}",
               style: TextStyle(
-                color: city.color.withOpacity(0.7),
+                color: city.color.withOpacity(0.8),
                 fontSize: 10,
                 fontWeight: FontWeight.w700,
               ),
@@ -926,42 +845,40 @@ class _CityDetailSheet extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // Stat row
+          // Stat row (Zeroed out)
           Row(
             children: [
-              _SheetStat(label: "MISSIONS", value: "12", color: city.color),
+              _SheetStat(label: "MISSIONS", value: "0", color: city.color),
               const SizedBox(width: 10),
-              _SheetStat(label: "STREAK", value: "7d 🔥", color: Colors.orangeAccent),
+              _SheetStat(label: "STREAK", value: "0d 🔥", color: Colors.grey),
               const SizedBox(width: 10),
-              _SheetStat(label: "TOTAL XP", value: "340", color: _liteBlue),
+              _SheetStat(label: "TOTAL XP", value: "0", color: _neonBlue),
             ],
           ),
 
           const SizedBox(height: 24),
 
-          // Evolve button
+          // Evolve button (Sleeker, glowy)
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 14),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [city.color, city.color.withOpacity(0.6)],
-                ),
-                borderRadius: BorderRadius.circular(16),
+                color: city.color.withOpacity(0.1),
+                border: Border.all(color: city.color, width: 1.5),
+                borderRadius: BorderRadius.circular(12),
                 boxShadow: [
-                  BoxShadow(
-                      color: city.color.withOpacity(0.4), blurRadius: 18),
+                  BoxShadow(color: city.color.withOpacity(0.3), blurRadius: 15),
                 ],
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  "⚡  EVOLVE DISTRICT",
+                  "⚡ INSUFFICIENT XP TO EVOLVE",
                   style: TextStyle(
-                    color: Colors.white,
+                    color: city.color,
                     fontWeight: FontWeight.w900,
-                    fontSize: 14,
+                    fontSize: 13,
                     letterSpacing: 2,
                   ),
                 ),
@@ -991,7 +908,7 @@ class _SheetStat extends StatelessWidget {
         decoration: BoxDecoration(
           color: color.withOpacity(0.07),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.2), width: 1),
+          border: Border.all(color: color.withOpacity(0.25), width: 1),
         ),
         child: Column(
           children: [
@@ -1007,7 +924,7 @@ class _SheetStat extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: _white.withOpacity(0.35),
+                color: _white.withOpacity(0.4),
                 fontSize: 8,
                 letterSpacing: 1.5,
                 fontWeight: FontWeight.w700,
@@ -1020,7 +937,7 @@ class _SheetStat extends StatelessWidget {
   }
 }
 
-//  New city bottom sheet 
+// New city bottom sheet 
 class _NewCitySheet extends StatefulWidget {
   final void Function(_CityData) onAdd;
   const _NewCitySheet({required this.onAdd});
@@ -1030,28 +947,26 @@ class _NewCitySheet extends StatefulWidget {
 }
 
 class _NewCitySheetState extends State<_NewCitySheet> {
-  static const _white    = Color(0xFFF0E6FF);
-  static const _purple   = Color(0xFF7B2FBE);
-  static const _liteBlue = Color(0xFF6EC6F5);
-  static const _red      = Color(0xFFCC1C3A);
+  static const _white    = Color(0xFFE0E5FF);
+  static const _black    = Color(0xFF050508);
+  static const _neonBlue = Color(0xFF00F0FF);
+  static const _neonRed  = Color(0xFFFF003C);
 
   final _nameCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
 
   String _selectedEmoji = "🏙️";
-  Color _selectedColor  = const Color(0xFF7B2FBE);
+  Color _selectedColor  = const Color(0xFF00F0FF);
   String _selectedTag   = "CUSTOM";
 
   final _emojis = ["🏙️","⚔️","🎵","💻","🌿","🧪","🏄","🎭","🌙","🚀"];
   final _colors = [
-    const Color(0xFF7B2FBE),
-    const Color(0xFF6EC6F5),
-    const Color(0xFFCC1C3A),
-    const Color(0xFFE040FB),
+    const Color(0xFF00F0FF), // Cyan
+    const Color(0xFFFF003C), // Red
+    const Color(0xFFFF00FF), // Magenta
+    const Color(0xFF00FFAA), // Green
     Colors.orangeAccent,
-    Colors.greenAccent,
     Colors.yellowAccent,
-    Colors.tealAccent,
   ];
   final _tags = ["CUSTOM","SPORT","ART","TECH","NATURE","SOCIAL","SPIRIT","FINANCE"];
 
@@ -1064,11 +979,11 @@ class _NewCitySheetState extends State<_NewCitySheet> {
         bottom: MediaQuery.of(context).viewInsets.bottom + 24,
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F0018),
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: _liteBlue.withOpacity(0.35), width: 1.5),
+        color: _black,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: _neonBlue.withOpacity(0.5), width: 1.5),
         boxShadow: [
-          BoxShadow(color: _purple.withOpacity(0.2), blurRadius: 30),
+          BoxShadow(color: _neonBlue.withOpacity(0.2), blurRadius: 30),
         ],
       ),
       child: SingleChildScrollView(
@@ -1081,18 +996,17 @@ class _NewCitySheetState extends State<_NewCitySheet> {
               child: Container(
                 width: 40, height: 4,
                 decoration: BoxDecoration(
-                  color: _liteBlue.withOpacity(0.3),
+                  color: _neonBlue.withOpacity(0.4),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-
             const SizedBox(height: 20),
 
             const Text(
               "FOUND NEW DISTRICT",
               style: TextStyle(
-                color: _white,
+                color: _neonBlue,
                 fontWeight: FontWeight.w900,
                 fontSize: 16,
                 letterSpacing: 3,
@@ -1100,8 +1014,8 @@ class _NewCitySheetState extends State<_NewCitySheet> {
             ),
             const SizedBox(height: 4),
             Text(
-              "Choose an identity for your new city.",
-              style: TextStyle(color: _white.withOpacity(0.4), fontSize: 12),
+              "Initialize parameters for the new zone.",
+              style: TextStyle(color: _white.withOpacity(0.5), fontSize: 12),
             ),
 
             const SizedBox(height: 20),
@@ -1110,22 +1024,21 @@ class _NewCitySheetState extends State<_NewCitySheet> {
             _GlowTextField(
               controller: _nameCtrl,
               hint: "District name...",
-              color: _liteBlue,
+              color: _neonBlue,
             ),
-
             const SizedBox(height: 12),
 
             // Desc field
             _GlowTextField(
               controller: _descCtrl,
               hint: "Short description...",
-              color: _purple,
+              color: _neonRed,
             ),
 
             const SizedBox(height: 20),
 
             // Emoji picker
-            _SectionLabel(label: "PICK AN ICON"),
+            const _SectionLabel(label: "SELECT ICON"),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8, runSpacing: 8,
@@ -1137,14 +1050,10 @@ class _NewCitySheetState extends State<_NewCitySheet> {
                     duration: const Duration(milliseconds: 180),
                     width: 44, height: 44,
                     decoration: BoxDecoration(
-                      color: sel
-                          ? _selectedColor.withOpacity(0.2)
-                          : Colors.white.withOpacity(0.04),
+                      color: sel ? _selectedColor.withOpacity(0.2) : Colors.transparent,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: sel
-                            ? _selectedColor
-                            : Colors.white.withOpacity(0.1),
+                        color: sel ? _selectedColor : _white.withOpacity(0.1),
                         width: 1.5,
                       ),
                     ),
@@ -1159,10 +1068,10 @@ class _NewCitySheetState extends State<_NewCitySheet> {
             const SizedBox(height: 20),
 
             // Color picker
-            _SectionLabel(label: "DISTRICT COLOR"),
+            const _SectionLabel(label: "DISTRICT COLOR"),
             const SizedBox(height: 10),
             Wrap(
-              spacing: 8, runSpacing: 8,
+              spacing: 12, runSpacing: 12,
               children: _colors.map((c) {
                 final sel = c == _selectedColor;
                 return GestureDetector(
@@ -1172,14 +1081,12 @@ class _NewCitySheetState extends State<_NewCitySheet> {
                     width: 32, height: 32,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: c,
+                      color: c.withOpacity(sel ? 1.0 : 0.5),
                       border: Border.all(
                         color: sel ? Colors.white : Colors.transparent,
-                        width: 2.5,
+                        width: 2.0,
                       ),
-                      boxShadow: sel
-                          ? [BoxShadow(color: c.withOpacity(0.6), blurRadius: 10)]
-                          : null,
+                      boxShadow: sel ? [BoxShadow(color: c.withOpacity(0.8), blurRadius: 12)] : null,
                     ),
                   ),
                 );
@@ -1189,7 +1096,7 @@ class _NewCitySheetState extends State<_NewCitySheet> {
             const SizedBox(height: 20),
 
             // Tag picker
-            _SectionLabel(label: "CATEGORY TAG"),
+            const _SectionLabel(label: "CATEGORY TAG"),
             const SizedBox(height: 10),
             Wrap(
               spacing: 8, runSpacing: 8,
@@ -1199,24 +1106,19 @@ class _NewCitySheetState extends State<_NewCitySheet> {
                   onTap: () => setState(() => _selectedTag = t),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 180),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: sel
-                          ? _selectedColor.withOpacity(0.2)
-                          : Colors.white.withOpacity(0.04),
+                      color: sel ? _selectedColor.withOpacity(0.2) : Colors.transparent,
                       borderRadius: BorderRadius.circular(50),
                       border: Border.all(
-                        color: sel
-                            ? _selectedColor
-                            : Colors.white.withOpacity(0.12),
+                        color: sel ? _selectedColor : _white.withOpacity(0.2),
                         width: 1.2,
                       ),
                     ),
                     child: Text(
                       t,
                       style: TextStyle(
-                        color: sel ? _selectedColor : _white.withOpacity(0.4),
+                        color: sel ? _selectedColor : _white.withOpacity(0.5),
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1.2,
@@ -1229,7 +1131,7 @@ class _NewCitySheetState extends State<_NewCitySheet> {
 
             const SizedBox(height: 28),
 
-            // Create button
+            // Create button (Sleeker glow button)
             GestureDetector(
               onTap: () {
                 if (_nameCtrl.text.trim().isEmpty) return;
@@ -1238,34 +1140,32 @@ class _NewCitySheetState extends State<_NewCitySheet> {
                   emoji: _selectedEmoji,
                   icon: Icons.location_city_rounded,
                   desc: _descCtrl.text.trim().isEmpty
-                      ? "A new district in your city."
+                      ? "A new district in your grid."
                       : _descCtrl.text.trim(),
                   color: _selectedColor,
-                  level: 1,
+                  level: 0,
                   progress: 0.0,
                   tag: _selectedTag,
                 ));
               },
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [_selectedColor, _selectedColor.withOpacity(0.6)],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
+                  color: _selectedColor.withOpacity(0.1),
+                  border: Border.all(color: _selectedColor, width: 1.5),
+                  borderRadius: BorderRadius.circular(12),
                   boxShadow: [
-                    BoxShadow(
-                        color: _selectedColor.withOpacity(0.4), blurRadius: 18),
+                    BoxShadow(color: _selectedColor.withOpacity(0.3), blurRadius: 15),
                   ],
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    "🏙️  FOUND DISTRICT",
+                    "COMPILE DISTRICT",
                     style: TextStyle(
-                      color: Colors.white,
+                      color: _selectedColor,
                       fontWeight: FontWeight.w900,
-                      fontSize: 14,
+                      fontSize: 13,
                       letterSpacing: 2,
                     ),
                   ),
@@ -1279,7 +1179,6 @@ class _NewCitySheetState extends State<_NewCitySheet> {
   }
 }
 
-//  Glow text field 
 class _GlowTextField extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
@@ -1287,45 +1186,43 @@ class _GlowTextField extends StatelessWidget {
   const _GlowTextField(
       {required this.controller, required this.hint, required this.color});
 
-  static const _white = Color(0xFFF0E6FF);
+  static const _white = Color(0xFFE0E5FF);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        color: color.withOpacity(0.05),
-        border: Border.all(color: color.withOpacity(0.3), width: 1.2),
+        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFF0A0D14),
+        border: Border.all(color: color.withOpacity(0.4), width: 1.2),
       ),
       child: TextField(
         controller: controller,
         style: const TextStyle(color: _white, fontSize: 14),
+        cursorColor: color,
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle:
-              TextStyle(color: _white.withOpacity(0.25), fontSize: 13),
+          hintStyle: TextStyle(color: _white.withOpacity(0.3), fontSize: 13),
           border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
       ),
     );
   }
 }
 
-//  Section label 
 class _SectionLabel extends StatelessWidget {
   final String label;
   const _SectionLabel({required this.label});
 
-  static const _white = Color(0xFFF0E6FF);
+  static const _white = Color(0xFFE0E5FF);
 
   @override
   Widget build(BuildContext context) {
     return Text(
       label,
       style: TextStyle(
-        color: _white.withOpacity(0.35),
+        color: _white.withOpacity(0.4),
         fontSize: 9,
         letterSpacing: 3,
         fontWeight: FontWeight.w700,
@@ -1334,7 +1231,7 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
-//  Data model 
+// Data model 
 class _CityData {
   final String name;
   final String emoji;
@@ -1357,45 +1254,26 @@ class _CityData {
   });
 }
 
-//  Painters 
-class _CityBgPainter extends CustomPainter {
+// Cyber Grid Background Painter
+class _CyberGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     canvas.drawRect(
       Rect.fromLTWH(0, 0, size.width, size.height),
-      Paint()..color = const Color(0xFF0A0008),
+      Paint()..color = const Color(0xFF050508),
     );
-    final paint = Paint()
-      ..color = const Color(0xFF7B2FBE).withOpacity(0.04)
-      ..strokeWidth = 1
-      ..style = PaintingStyle.stroke;
-    final cx = size.width * 0.5;
-    final cy = size.height * 1.2;
-    for (int i = 0; i < 24; i++) {
-      final a = (i / 24) * 3.14159 * 2;
-      final ex = cx + size.height * 1.5 * _cos(a);
-      final ey = cy + size.height * 1.5 * _sin(a);
-      canvas.drawLine(Offset(cx, cy), Offset(ex, ey), paint);
-    }
-    canvas.drawCircle(
-      Offset(size.width * 0.8, size.height * 0.15),
-      size.width * 0.35,
-      Paint()
-        ..shader = RadialGradient(colors: [
-          const Color(0xFF6EC6F5).withOpacity(0.08),
-          Colors.transparent,
-        ]).createShader(Rect.fromCircle(
-          center: Offset(size.width * 0.8, size.height * 0.15),
-          radius: size.width * 0.35,
-        )),
-    );
-  }
 
-  double _cos(double a) =>
-      (a < 3.14159) ? -1 + 2 * a / 3.14159 : 1 - 2 * (a - 3.14159) / 3.14159;
-  double _sin(double a) {
-    final b = a - 1.5708;
-    return _cos(b < 0 ? b + 6.28318 : b);
+    final gridPaint = Paint()
+      ..color = const Color(0xFF00F0FF).withOpacity(0.04)
+      ..strokeWidth = 1.0;
+
+    const gap = 30.0;
+    for (double x = 0; x < size.width; x += gap) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
+    }
+    for (double y = 0; y < size.height; y += gap) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+    }
   }
 
   @override
@@ -1406,10 +1284,11 @@ class _BannerLinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF7B2FBE).withOpacity(0.06)
-      ..strokeWidth = 1
+      ..color = const Color(0xFF00F0FF).withOpacity(0.06)
+      ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
-    final cx = size.width * 0.9;
+      
+    const cx = 0.0;
     final cy = size.height * 0.5;
     for (int i = 0; i < 18; i++) {
       final a = (i / 18) * 3.14159 * 2;
@@ -1421,8 +1300,7 @@ class _BannerLinePainter extends CustomPainter {
     }
   }
 
-  double _cos(double a) =>
-      (a < 3.14159) ? -1 + 2 * a / 3.14159 : 1 - 2 * (a - 3.14159) / 3.14159;
+  double _cos(double a) => (a < 3.14159) ? -1 + 2 * a / 3.14159 : 1 - 2 * (a - 3.14159) / 3.14159;
   double _sin(double a) {
     final b = a - 1.5708;
     return _cos(b < 0 ? b + 6.28318 : b);
@@ -1436,13 +1314,13 @@ class _SkylinePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF7B2FBE).withOpacity(0.18)
+      ..color = const Color(0xFF00F0FF).withOpacity(0.12)
       ..style = PaintingStyle.fill;
 
     final path = Path();
     path.moveTo(0, size.height);
 
-    // Hand-crafted silhouette buildings
+    // Silhouette buildings
     final buildings = [
       [0.0, 1.0], [0.0, 0.55], [0.06, 0.55], [0.06, 0.35],
       [0.10, 0.35],[0.10, 0.45],[0.16, 0.45],[0.16, 0.2],
@@ -1465,37 +1343,17 @@ class _SkylinePainter extends CustomPainter {
 
     // Window dots
     final winPaint = Paint()
-      ..color = const Color(0xFF6EC6F5).withOpacity(0.3);
+      ..color = const Color(0xFF00F0FF).withOpacity(0.3);
     final rng = [0.08, 0.18, 0.30, 0.40, 0.54, 0.63, 0.74, 0.83, 0.93];
     for (final x in rng) {
       for (double y = 0.3; y < 0.85; y += 0.18) {
         canvas.drawRect(
           Rect.fromCenter(
             center: Offset(size.width * x, size.height * y),
-            width: 3, height: 4,
+            width: 2, height: 3,
           ),
           winPaint,
         );
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_) => false;
-}
-
-class _SmallHalftonePainter extends CustomPainter {
-  final Color color;
-  const _SmallHalftonePainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color;
-    const gap = 8.0;
-    const r   = 1.8;
-    for (double x = 0; x < size.width; x += gap) {
-      for (double y = 0; y < size.height; y += gap) {
-        canvas.drawCircle(Offset(x, y), r, paint);
       }
     }
   }
