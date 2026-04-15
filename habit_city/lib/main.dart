@@ -89,12 +89,12 @@ class _MainNavigationState extends State<MainNavigation> {
 
   void _onTabChange(int index) {
     // Bottom nav maps to:
-    // 0 -> Dashboard (Index 1 in stack)
-    // 1 -> Missions   (Index 2 in stack)
-    // 2 -> City       (Index 3 in stack)
-    // 3 -> Profile    (Index 4 in stack)
+    // 0 -> Dashboard
+    // 1 -> Missions
+    // 2 -> City
+    // 3 -> Profile
     setState(() {
-      _currentIndex = index + 1; // 👈 shift because Home is index 0
+      _currentIndex = index + 1; // shift because Home is index 0
     });
   }
 
@@ -104,34 +104,32 @@ class _MainNavigationState extends State<MainNavigation> {
       body: IndexedStack(
         index: _currentIndex,
         children: [
-          // Index 0: Home
-          HomeScreen(onNavigate: switchTab),
-          
-          // Index 1: Dashboard
-          DashboardScreen(onNavigate: switchTab), 
-          
-          // Index 2: Missions
-          MissionsScreen(onNavigate: switchTab),
-          
-          // Index 3: City
-          CityScreen(onNavigate: switchTab),
-          
-          // Index 4: Profile
-          ProfileScreen(onNavigate: switchTab),
+          HomeScreen(onNavigate: switchTab),      // Index 0
+          DashboardScreen(onNavigate: switchTab), // Index 1
+          MissionsScreen(onNavigate: switchTab),  // Index 2
+          CityScreen(onNavigate: switchTab),      // Index 3
+          ProfileScreen(onNavigate: switchTab),   // Index 4
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        // If we are on Home (index 0), select the first tab (Dashboard) visually,
-        // otherwise select the current tab - 1.
-        currentIndex: _currentIndex == 0 ? 0 : _currentIndex - 1,
-        onTap: _onTabChange,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dash'),
-          BottomNavigationBarItem(icon: Icon(Icons.flag), label: 'Missions'),
-          BottomNavigationBarItem(icon: Icon(Icons.location_city), label: 'City'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-        ],
-      ),
+      
+      //  CONDITIONAL BOTTOM BAR 
+      // Hide the bottom bar if we are on HomeScreen (index 0)
+      bottomNavigationBar: _currentIndex == 0 
+          ? null 
+          : BottomNavigationBar(
+              currentIndex: _currentIndex - 1,
+              onTap: _onTabChange,
+              items: const [
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.dashboard), label: 'Dash'),
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.flag), label: 'Missions'),
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.location_city), label: 'City'),
+                BottomNavigationBarItem(
+                    icon: Icon(Icons.person), label: 'Profile'),
+              ],
+            ),
     );
   }
 }

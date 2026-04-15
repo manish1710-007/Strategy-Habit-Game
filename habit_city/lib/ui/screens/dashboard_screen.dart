@@ -12,7 +12,6 @@ import '../widgets/waifu_character.dart';
 import 'package:uuid/uuid.dart';
 
 class DashboardScreen extends StatefulWidget {
-
   final Function(int) onNavigate;
 
   const DashboardScreen({super.key, required this.onNavigate});
@@ -30,16 +29,19 @@ class _DashboardScreenState extends State<DashboardScreen>
   Offset particlePosition = Offset.zero;
   WaifuMood mood = WaifuMood.idle;
 
+  // Selection state
+  bool isSelectionMode = false;
+  Set<String> selectedIds = {};
+
   late AnimationController _bgController;
   late Animation<double> _bgAnim;
 
-  //  Palette 
-  static const _black      = Color(0xFF0A0008);
-  static const _deepPurple = Color(0xFF2D0057);
-  static const _purple     = Color(0xFF7B2FBE);
-  static const _red        = Color(0xFFCC1C3A);
-  static const _liteBlue   = Color(0xFF6EC6F5);
-  static const _white      = Color(0xFFF0E6FF);
+  //Retro Futuristic Palette
+  static const _black    = Color(0xFF050508); // Deep dark void
+  static const _void     = Color(0xFF0A0D14); // Slightly elevated dark
+  static const _neonBlue = Color(0xFF00F0FF); // Cyber Cyan
+  static const _neonRed  = Color(0xFFFF003C); // Synthwave Red
+  static const _white    = Color(0xFFE0E5FF); // Crisp digital white
 
   @override
   void initState() {
@@ -47,9 +49,11 @@ class _DashboardScreenState extends State<DashboardScreen>
     loadHabits();
     _bgController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 6),
+      duration: const Duration(seconds: 4),
     )..repeat(reverse: true);
-    _bgAnim = Tween<double>(begin: 0, end: 1).animate(_bgController);
+    _bgAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _bgController, curve: Curves.easeInOutSine)
+    );
   }
 
   @override
@@ -67,11 +71,12 @@ class _DashboardScreenState extends State<DashboardScreen>
     });
   }
 
-  void addHabit() {
+  // Accepts a custom title from the dialog
+  void addHabit(String title) {
     final habit = Habit(
       id: const Uuid().v4(),
-      title: "New Mission",
-      difficulty: 1,
+      title: title,
+      difficulty: 1, // Can make this selectable later!
       createdAt: DateTime.now(),
     );
     box.put(habit.id, habit.toMap());
@@ -116,6 +121,121 @@ class _DashboardScreenState extends State<DashboardScreen>
     }
   }
 
+  void deleteSelectedHabits() {
+    for (var id in selectedIds) {
+      box.delete(id);
+    }
+    setState(() {
+      isSelectionMode = false;
+      selectedIds.clear();
+    });
+    loadHabits();
+  }
+
+  // The Cyberpunk Input Dialog
+  void _showAddMissionDialog() {
+    final TextEditingController titleController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          decoration: BoxDecoration(
+            color: _black,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: _neonBlue, width: 1.5),
+            boxShadow: [
+              BoxShadow(color: _neonBlue.withOpacity(0.3), blurRadius: 20, spreadRadius: -2),
+            ],
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "NEW PROTOCOL",
+                style: TextStyle(
+                  color: _neonBlue,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: titleController,
+                autofocus: true,
+                style: const TextStyle(color: _white),
+                cursorColor: _neonRed,
+                decoration: InputDecoration(
+                  hintText: "Enter mission designation...",
+                  hintStyle: TextStyle(color: _white.withOpacity(0.3)),
+                  filled: true,
+                  fillColor: _void,
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: _neonBlue.withOpacity(0.5)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: _neonBlue, width: 2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onSubmitted: (value) {
+                  if (value.trim().isNotEmpty) {
+                    addHabit(value.trim());
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      "CANCEL",
+                      style: TextStyle(color: _neonRed, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  GestureDetector(
+                    onTap: () {
+                      final title = titleController.text.trim();
+                      if (title.isNotEmpty) {
+                        addHabit(title);
+                        Navigator.pop(context);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [_neonBlue, Color(0xFF0088AA)]),
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [BoxShadow(color: _neonBlue.withOpacity(0.4), blurRadius: 8)],
+                      ),
+                      child: const Text(
+                        "INITIALIZE ⚡",
+                        style: TextStyle(
+                          color: _black,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showLevelUpDialog(int level) {
     showDialog(
       context: context,
@@ -125,10 +245,10 @@ class _DashboardScreenState extends State<DashboardScreen>
           decoration: BoxDecoration(
             color: _black,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: _purple, width: 2.5),
+            border: Border.all(color: _neonBlue, width: 2.5),
             boxShadow: [
-              BoxShadow(color: _purple.withOpacity(0.6), blurRadius: 24, spreadRadius: 2),
-              BoxShadow(color: _red.withOpacity(0.4),    blurRadius: 40, spreadRadius: -4),
+              BoxShadow(color: _neonBlue.withOpacity(0.4), blurRadius: 24, spreadRadius: 2),
+              BoxShadow(color: _neonRed.withOpacity(0.3),  blurRadius: 40, spreadRadius: -4),
             ],
           ),
           padding: const EdgeInsets.all(28),
@@ -138,40 +258,41 @@ class _DashboardScreenState extends State<DashboardScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
-                  color: _red,
+                  color: _neonRed.withOpacity(0.2),
+                  border: Border.all(color: _neonRed),
                   borderRadius: BorderRadius.circular(6),
-                  boxShadow: [BoxShadow(color: _red.withOpacity(0.7), blurRadius: 12)],
+                  boxShadow: [BoxShadow(color: _neonRed.withOpacity(0.4), blurRadius: 12)],
                 ),
                 child: const Text(
-                  "LEVEL UP!",
+                  "SYSTEM UPGRADE",
                   style: TextStyle(
-                    color: Colors.white,
+                    color: _neonRed,
                     fontWeight: FontWeight.w900,
-                    fontSize: 22,
+                    fontSize: 20,
                     letterSpacing: 3,
                   ),
                 ),
               ),
               const SizedBox(height: 16),
               Text(
-                "You reached Level $level 🚀",
-                style: const TextStyle(color: _white, fontSize: 16),
+                "Level $level Achieved 🚀",
+                style: const TextStyle(color: _white, fontSize: 18),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [_purple, _liteBlue]),
+                    gradient: const LinearGradient(colors: [_neonBlue, Color(0xFF0088AA)]),
                     borderRadius: BorderRadius.circular(50),
-                    boxShadow: [BoxShadow(color: _liteBlue.withOpacity(0.4), blurRadius: 14)],
+                    boxShadow: [BoxShadow(color: _neonBlue.withOpacity(0.4), blurRadius: 14)],
                   ),
                   child: const Text(
-                    "NICE! ⚡",
+                    "ACKNOWLEDGE ⚡",
                     style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
+                      color: _black,
+                      fontWeight: FontWeight.w900,
                       letterSpacing: 1.5,
                     ),
                   ),
@@ -191,62 +312,89 @@ class _DashboardScreenState extends State<DashboardScreen>
     return Scaffold(
       backgroundColor: _black,
 
-      //  AppBar 
+      // AppBar 
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(64),
         child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [_black, _deepPurple],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
-            border: Border(bottom: BorderSide(color: _purple, width: 2)),
+          decoration: BoxDecoration(
+            color: _black.withOpacity(0.9),
+            border: const Border(bottom: BorderSide(color: _neonBlue, width: 1.5)),
+            boxShadow: [
+              BoxShadow(color: _neonBlue.withOpacity(0.2), blurRadius: 15, spreadRadius: 1)
+            ]
           ),
           child: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  //  Home button 
+                  // Home button 
                   GestureDetector(
                     onTap: () => widget.onNavigate(0),
                     child: Container(
                       width: 36, height: 36,
                       decoration: BoxDecoration(
-                        color: _red,
+                        color: _black,
+                        border: Border.all(color: _neonRed, width: 1.5),
                         shape: BoxShape.circle,
                         boxShadow: [
-                          BoxShadow(
-                              color: _red.withOpacity(0.7), blurRadius: 10),
+                          BoxShadow(color: _neonRed.withOpacity(0.5), blurRadius: 10),
                         ],
                       ),
-                      child: const Icon(
-                        Icons.home_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
+                      child: const Icon(Icons.home_rounded, color: _neonRed, size: 18),
                     ),
                   ),
-
                   const SizedBox(width: 12),
 
                   const Text(
-                    "MISSION BOARD",
+                    "TERMINAL",
                     style: TextStyle(
                       color: _white,
                       fontWeight: FontWeight.w900,
                       fontSize: 18,
-                      letterSpacing: 3,
+                      letterSpacing: 4,
                     ),
                   ),
 
-                  const Spacer(),
-
-                  SizedBox(
-                    width: 32, height: 32,
-                    child: CustomPaint(painter: _HalftoneAccent()),
-                  ),
+                  // Selection & Deletion Controls
+                  if (isSelectionMode) ...[
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          if (selectedIds.length == habits.length) {
+                            selectedIds.clear();
+                          } else {
+                            selectedIds = habits.map((h) => h.id).toSet();
+                          }
+                        });
+                      },
+                      child: Text(
+                        selectedIds.length == habits.length ? "DESELECT ALL" : "SELECT ALL",
+                        style: const TextStyle(color: _neonBlue, fontWeight: FontWeight.bold, fontSize: 11),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, color: _neonRed),
+                      onPressed: selectedIds.isEmpty ? null : deleteSelectedHabits,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: _white),
+                      onPressed: () => setState(() {
+                        isSelectionMode = false;
+                        selectedIds.clear();
+                      }),
+                    ),
+                  ] else ...[
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () => setState(() => isSelectionMode = true),
+                      child: const Text(
+                        "SELECT",
+                        style: TextStyle(color: _neonBlue, fontWeight: FontWeight.bold, fontSize: 13, letterSpacing: 1.5),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -254,42 +402,41 @@ class _DashboardScreenState extends State<DashboardScreen>
         ),
       ),
 
-      //  FAB 
-      floatingActionButton: Container(
+      // Calls the Custom Input Dialog
+      floatingActionButton: isSelectionMode ? null : Container(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: const LinearGradient(
-            colors: [_red, _purple],
+            colors: [_neonBlue, Color(0xFF0088AA)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           boxShadow: [
-            BoxShadow(color: _purple.withOpacity(0.7), blurRadius: 16, spreadRadius: 1),
-            BoxShadow(color: _red.withOpacity(0.4),    blurRadius: 30, spreadRadius: -4),
+            BoxShadow(color: _neonBlue.withOpacity(0.6), blurRadius: 16, spreadRadius: 1),
           ],
         ),
         child: FloatingActionButton(
-          onPressed: addHabit,
+          onPressed: _showAddMissionDialog, // Changed this line
           backgroundColor: Colors.transparent,
           elevation: 0,
-          child: const Icon(Icons.add, color: Colors.white, size: 28),
+          child: const Icon(Icons.add, color: _black, size: 32),
         ),
       ),
 
-      //  Body 
+      // Body 
       body: Stack(
         children: [
-          // Animated comic background
+          // Animated Retro Grid Background
           AnimatedBuilder(
             animation: _bgAnim,
-            builder: (_, __) => _ComicBackground(t: _bgAnim.value),
+            builder: (_, __) => _RetroWaveBackground(t: _bgAnim.value),
           ),
 
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                //  Cinematic header 
+                // Cinematic header 
                 _DashboardHeader(
                   energy: appState.energy,
                   xp: appState.xp,
@@ -298,20 +445,19 @@ class _DashboardScreenState extends State<DashboardScreen>
 
                 const SizedBox(height: 16),
 
-                //  Habits list 
+                // Habits list 
                 Expanded(
                   child: habits.isEmpty
                       ? Center(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.bolt_outlined,
-                                  color: _purple.withOpacity(0.4), size: 56),
+                              Icon(Icons.memory, color: _neonBlue.withOpacity(0.3), size: 56),
                               const SizedBox(height: 12),
                               const Text(
-                                "NO MISSIONS YET",
+                                "NO ACTIVE PROTOCOLS",
                                 style: TextStyle(
-                                  color: _purple,
+                                  color: _neonBlue,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 3,
                                   fontSize: 14,
@@ -324,32 +470,55 @@ class _DashboardScreenState extends State<DashboardScreen>
                           itemCount: habits.length,
                           itemBuilder: (context, index) {
                             final habit = habits[index];
+                            final isSelected = selectedIds.contains(habit.id);
+
                             return Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: habit.completed
-                                        ? _purple.withOpacity(0.3)
-                                        : _purple.withOpacity(0.7),
-                                    width: 1.5,
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: GestureDetector(
+                                onLongPress: () {
+                                  if (!isSelectionMode) {
+                                    setState(() {
+                                      isSelectionMode = true;
+                                      selectedIds.add(habit.id);
+                                    });
+                                  }
+                                },
+                                onTap: () {
+                                  if (isSelectionMode) {
+                                    setState(() {
+                                      if (isSelected) {
+                                        selectedIds.remove(habit.id);
+                                      } else {
+                                        selectedIds.add(habit.id);
+                                      }
+                                    });
+                                  }
+                                },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    color: isSelected ? _neonRed.withOpacity(0.1) : Colors.transparent,
+                                    border: Border.all(
+                                      color: isSelectionMode
+                                          ? (isSelected ? _neonRed : _void)
+                                          : (habit.completed ? _neonBlue.withOpacity(0.2) : _neonBlue.withOpacity(0.7)),
+                                      width: isSelected ? 2.0 : 1.5,
+                                    ),
+                                    boxShadow: isSelected
+                                        ? [BoxShadow(color: _neonRed.withOpacity(0.3), blurRadius: 15)]
+                                        : (habit.completed ? [] : [BoxShadow(color: _neonBlue.withOpacity(0.15), blurRadius: 12)]),
                                   ),
-                                  boxShadow: habit.completed
-                                      ? []
-                                      : [
-                                          BoxShadow(
-                                            color: _purple.withOpacity(0.15),
-                                            blurRadius: 12,
-                                          )
-                                        ],
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: HabitCard(
-                                    habit: habit,
-                                    onTapWithPosition: (pos) =>
-                                        completeHabit(habit, pos),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: IgnorePointer(
+                                      // Disable inner taps if in selection mode
+                                      ignoring: isSelectionMode,
+                                      child: HabitCard(
+                                        habit: habit,
+                                        onTapWithPosition: (pos) => completeHabit(habit, pos),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -361,7 +530,7 @@ class _DashboardScreenState extends State<DashboardScreen>
             ),
           ),
 
-          //  Particle overlay 
+          // Particle overlay 
           if (showParticle)
             Positioned(
               left: particlePosition.dx - 20,
@@ -386,13 +555,10 @@ class _DashboardHeader extends StatelessWidget {
     required this.mood,
   });
 
-  static const _black      = Color(0xFF0A0008);
-  static const _deepPurple = Color(0xFF2D0057);
-  static const _purple     = Color(0xFF7B2FBE);
-  static const _red        = Color(0xFFCC1C3A);
-  static const _liteBlue   = Color(0xFF6EC6F5);
-  static const _pink       = Color(0xFFE040FB);
-  static const _white      = Color(0xFFF0E6FF);
+  static const _void     = Color(0xFF0A0D14);
+  static const _neonBlue = Color(0xFF00F0FF);
+  static const _neonRed  = Color(0xFFFF003C);
+  static const _white    = Color(0xFFE0E5FF);
 
   @override
   Widget build(BuildContext context) {
@@ -404,31 +570,24 @@ class _DashboardHeader extends StatelessWidget {
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1A003A), Color(0xFF0D0020)],
-        ),
-        border: Border.all(color: _purple.withOpacity(0.45), width: 1.5),
+        color: _void,
+        border: Border.all(color: _neonBlue.withOpacity(0.3), width: 1.5),
         boxShadow: [
-          BoxShadow(color: _purple.withOpacity(0.25), blurRadius: 28, spreadRadius: -2),
-          BoxShadow(color: _red.withOpacity(0.1),     blurRadius: 40, offset: const Offset(0, 10)),
+          BoxShadow(color: _neonBlue.withOpacity(0.15), blurRadius: 28, spreadRadius: -2),
+          BoxShadow(color: _neonRed.withOpacity(0.05),  blurRadius: 40, offset: const Offset(0, 10)),
         ],
       ),
       child: Stack(
         children: [
-          // Speed lines
-          Positioned.fill(child: CustomPaint(painter: _HeaderBgPainter())),
-
           // Blue right aura
           Positioned(
-            right: -20, top: -20, bottom: -20,
+            right: -40, top: -40, bottom: -40,
             width: 200,
             child: Container(
               decoration: BoxDecoration(
                 gradient: RadialGradient(
                   center: Alignment.centerRight,
-                  colors: [_liteBlue.withOpacity(0.14), Colors.transparent],
+                  colors: [_neonBlue.withOpacity(0.15), Colors.transparent],
                 ),
               ),
             ),
@@ -436,26 +595,17 @@ class _DashboardHeader extends StatelessWidget {
 
           // Red bottom-left bleed
           Positioned(
-            left: -30, bottom: -30,
-            width: 140, height: 140,
+            left: -40, bottom: -40,
+            width: 160, height: 160,
             child: Container(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(colors: [
-                  _red.withOpacity(0.18),
+                  _neonRed.withOpacity(0.15),
                   Colors.transparent,
                 ]),
               ),
             ),
-          ),
-
-          // Halftone dots — top right
-          Positioned(
-            top: 0, right: 0,
-            width: 90, height: 90,
-            child: CustomPaint(
-                painter: _SmallHalftonePainter(
-                    color: _purple.withOpacity(0.18))),
           ),
 
           // Content
@@ -464,8 +614,7 @@ class _DashboardHeader extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-
-                //  LEFT: Waifu + energy chip 
+                // LEFT: Waifu + energy chip 
                 SizedBox(
                   width: 100,
                   child: Stack(
@@ -494,7 +643,7 @@ class _DashboardHeader extends StatelessWidget {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        _purple.withOpacity(0.7),
+                        _neonBlue.withOpacity(0.5),
                         Colors.transparent,
                       ],
                     ),
@@ -503,33 +652,29 @@ class _DashboardHeader extends StatelessWidget {
 
                 const SizedBox(width: 14),
 
-                //  RIGHT: Stats 
+                // RIGHT: Stats 
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-
                       // Level row
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                             decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                  colors: [_red, Color(0xFF9B1A30)]),
+                              color: _neonRed.withOpacity(0.15),
+                              border: Border.all(color: _neonRed),
                               borderRadius: BorderRadius.circular(50),
                               boxShadow: [
-                                BoxShadow(
-                                    color: _red.withOpacity(0.5),
-                                    blurRadius: 10),
+                                BoxShadow(color: _neonRed.withOpacity(0.4), blurRadius: 10),
                               ],
                             ),
                             child: Text(
                               "LV.$level",
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: _neonRed,
                                 fontWeight: FontWeight.w900,
                                 fontSize: 13,
                                 letterSpacing: 1.5,
@@ -540,7 +685,7 @@ class _DashboardHeader extends StatelessWidget {
                           Text(
                             _rankLabel(level),
                             style: TextStyle(
-                              color: _pink.withOpacity(0.85),
+                              color: _neonBlue.withOpacity(0.85),
                               fontWeight: FontWeight.w700,
                               fontSize: 11,
                               letterSpacing: 2,
@@ -558,7 +703,7 @@ class _DashboardHeader extends StatelessWidget {
                           Text(
                             "EXPERIENCE",
                             style: TextStyle(
-                              color: _white.withOpacity(0.4),
+                              color: _white.withOpacity(0.5),
                               fontSize: 9,
                               letterSpacing: 2.5,
                               fontWeight: FontWeight.w700,
@@ -566,8 +711,8 @@ class _DashboardHeader extends StatelessWidget {
                           ),
                           Text(
                             "$current / 100 XP",
-                            style: TextStyle(
-                              color: _liteBlue.withOpacity(0.9),
+                            style: const TextStyle(
+                              color: _neonBlue,
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                             ),
@@ -596,7 +741,7 @@ class _DashboardHeader extends StatelessWidget {
                             icon: Icons.military_tech_rounded,
                             label: "TOTAL XP",
                             value: "$xp",
-                            color: _liteBlue,
+                            color: _neonBlue,
                           ),
                         ],
                       ),
@@ -604,15 +749,6 @@ class _DashboardHeader extends StatelessWidget {
                   ),
                 ),
               ],
-            ),
-          ),
-
-          // Comic starburst accent
-          Positioned(
-            top: 8, left: 108,
-            child: CustomPaint(
-              size: const Size(42, 24),
-              painter: _ComicSplashPainter(),
             ),
           ),
         ],
@@ -628,7 +764,7 @@ class _DashboardHeader extends StatelessWidget {
   }
 }
 
-//  Energy chip 
+// Energy chip 
 class _EnergyChip extends StatelessWidget {
   final int energy;
   const _EnergyChip({required this.energy});
@@ -638,11 +774,11 @@ class _EnergyChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.45),
+        color: const Color(0xFF050508).withOpacity(0.8),
         borderRadius: BorderRadius.circular(50),
-        border: Border.all(color: Colors.yellowAccent.withOpacity(0.6), width: 1.2),
+        border: Border.all(color: const Color(0xFF00F0FF).withOpacity(0.6), width: 1.2),
         boxShadow: [
-          BoxShadow(color: Colors.yellowAccent.withOpacity(0.15), blurRadius: 10),
+          BoxShadow(color: const Color(0xFF00F0FF).withOpacity(0.2), blurRadius: 10),
         ],
       ),
       child: Row(
@@ -653,7 +789,7 @@ class _EnergyChip extends StatelessWidget {
           Text(
             "$energy",
             style: const TextStyle(
-              color: Colors.yellowAccent,
+              color: Color(0xFF00F0FF),
               fontWeight: FontWeight.w800,
               fontSize: 12,
             ),
@@ -669,8 +805,8 @@ class _SegmentedXPBar extends StatelessWidget {
   final double value;
   const _SegmentedXPBar({required this.value});
 
-  static const _liteBlue = Color(0xFF6EC6F5);
-  static const _purple   = Color(0xFF7B2FBE);
+  static const _neonBlue = Color(0xFF00F0FF);
+  static const _neonDark = Color(0xFF005577);
 
   @override
   Widget build(BuildContext context) {
@@ -683,15 +819,14 @@ class _SegmentedXPBar extends StatelessWidget {
         return Expanded(
           child: Container(
             margin: EdgeInsets.only(right: i < segments - 1 ? 3 : 0),
-            height: 10,
+            height: 8,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(3),
+              borderRadius: BorderRadius.circular(2),
               color: active
-                  ? Color.lerp(_purple, _liteBlue, i / segments)
-                  : Colors.white.withOpacity(0.07),
+                  ? Color.lerp(_neonDark, _neonBlue, i / segments)
+                  : Colors.white.withOpacity(0.05),
               boxShadow: active
-                  ? [BoxShadow(
-                      color: _liteBlue.withOpacity(0.4), blurRadius: 6)]
+                  ? [BoxShadow(color: _neonBlue.withOpacity(0.5), blurRadius: 6)]
                   : null,
             ),
           ),
@@ -701,7 +836,7 @@ class _SegmentedXPBar extends StatelessWidget {
   }
 }
 
-//  Mini stat pill 
+// Mini stat pill 
 class _MiniStatPill extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -743,218 +878,78 @@ class _MiniStatPill extends StatelessWidget {
   }
 }
 
-//  Comic background 
-class _ComicBackground extends StatelessWidget {
+// Smooth Retro Wave Background (Replaces Comic BG)
+class _RetroWaveBackground extends StatelessWidget {
   final double t;
-  const _ComicBackground({required this.t});
+  const _RetroWaveBackground({required this.t});
 
   @override
   Widget build(BuildContext context) =>
-      SizedBox.expand(child: CustomPaint(painter: _ComicBgPainter(t: t)));
+      SizedBox.expand(child: CustomPaint(painter: _RetroWavePainter(t: t)));
 }
 
-class _ComicBgPainter extends CustomPainter {
+class _RetroWavePainter extends CustomPainter {
   final double t;
-  const _ComicBgPainter({required this.t});
+  const _RetroWavePainter({required this.t});
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Base
-    final bgPaint = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [
-          const Color(0xFF0A0008),
-          Color.lerp(const Color(0xFF1A003A), const Color(0xFF0D0020), t)!,
-          const Color(0xFF0A0008),
-        ],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
-
-    // Speed lines
-    final linePaint = Paint()
-      ..color = const Color(0xFF7B2FBE).withOpacity(0.07)
-      ..strokeWidth = 1.2
-      ..style = PaintingStyle.stroke;
-
-    final center = Offset(size.width * 0.5, -size.height * 0.1);
-    for (int i = 0; i < 28; i++) {
-      final angle = (i / 28) * 3.14159 * 2;
-      canvas.drawLine(
-        center,
-        Offset(
-          center.dx + size.height * 1.8 * _cos(angle),
-          center.dy + size.height * 1.8 * _sin(angle),
-        ),
-        linePaint,
-      );
-    }
-
-    // Halftone dots — bottom left
-    final dotPaint = Paint()
-      ..color = const Color(0xFFCC1C3A).withOpacity(0.06);
-    for (double x = 0; x < size.width * 0.3; x += 14) {
-      for (double y = size.height * 0.7; y < size.height; y += 14) {
-        canvas.drawCircle(Offset(x, y), 3.0 * (0.5 + 0.5 * t), dotPaint);
-      }
-    }
-
-    // Blue glow — top right
-    canvas.drawCircle(
-      Offset(size.width * 0.9, size.height * 0.1),
-      size.width * 0.4,
-      Paint()
-        ..shader = RadialGradient(colors: [
-          const Color(0xFF6EC6F5).withOpacity(0.12 + 0.05 * t),
-          Colors.transparent,
-        ]).createShader(Rect.fromCircle(
-          center: Offset(size.width * 0.9, size.height * 0.1),
-          radius: size.width * 0.4,
-        )),
+    // Solid Void Base
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height), 
+      Paint()..color = const Color(0xFF050508)
     );
 
-    // Purple glow — bottom left
-    canvas.drawCircle(
-      Offset(size.width * 0.1, size.height * 0.9),
-      size.width * 0.5,
+    // Glowing Top Blue Horizon
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height * 0.4),
       Paint()
-        ..shader = RadialGradient(colors: [
-          const Color(0xFF7B2FBE).withOpacity(0.15 + 0.06 * t),
-          Colors.transparent,
-        ]).createShader(Rect.fromCircle(
-          center: Offset(size.width * 0.1, size.height * 0.9),
-          radius: size.width * 0.5,
-        )),
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color(0xFF00F0FF).withOpacity(0.1 + 0.05 * t),
+            Colors.transparent,
+          ],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.4))
     );
-  }
 
-  double _cos(double a) =>
-      (a < 3.14159) ? -1 + 2 * a / 3.14159 : 1 - 2 * (a - 3.14159) / 3.14159;
-  double _sin(double a) {
-    final b = a - 1.5708;
-    return _cos(b < 0 ? b + 6.28318 : b);
-  }
-
-  @override
-  bool shouldRepaint(_ComicBgPainter old) => old.t != t;
-}
-
-//  Header background painter 
-class _HeaderBgPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF7B2FBE).withOpacity(0.05)
-      ..strokeWidth = 1
+    // Cyber Grid Perspective
+    final gridPaint = Paint()
+      ..color = const Color(0xFF00F0FF).withOpacity(0.15)
+      ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
-    const cx = 0.0;
-    final cy = size.height * 0.5;
-    for (int i = 0; i < 20; i++) {
-      final angle = (i / 20) * 3.14159 - 1.5708;
-      canvas.drawLine(
-        Offset(cx, cy),
-        Offset(cx + size.width * 1.4 * _cos(angle),
-               cy + size.width * 1.4 * _sin(angle)),
-        paint,
-      );
-    }
-  }
-
-  double _cos(double a) =>
-      (a < 3.14159) ? -1 + 2 * a / 3.14159 : 1 - 2 * (a - 3.14159) / 3.14159;
-  double _sin(double a) {
-    final b = a - 1.5708;
-    return _cos(b < 0 ? b + 6.28318 : b);
-  }
-
-  @override
-  bool shouldRepaint(_) => false;
-}
-
-//  Small halftone painter 
-class _SmallHalftonePainter extends CustomPainter {
-  final Color color;
-  const _SmallHalftonePainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color;
-    const gap = 9.0;
-    const r   = 2.0;
-    for (double x = 0; x < size.width; x += gap) {
-      for (double y = 0; y < size.height; y += gap) {
-        canvas.drawCircle(Offset(x, y), r, paint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_) => false;
-}
-
-//  Comic splash painter 
-class _ComicSplashPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final path = Path();
+    final horizonY = size.height * 0.4;
     final cx = size.width / 2;
-    final cy = size.height / 2;
-    const points = 8;
-    const outer  = 11.0;
-    const inner  = 6.0;
 
-    for (int i = 0; i < points * 2; i++) {
-      final angle = (i * 3.14159) / points - 1.5708;
-      final r = i.isEven ? outer : inner;
-      final x = cx + r * _cos(angle);
-      final y = cy + r * _sin(angle);
-      i == 0 ? path.moveTo(x, y) : path.lineTo(x, y);
+    // Vertical Perspective Lines
+    for (int i = -10; i <= 10; i++) {
+      final startX = cx + (i * 20);
+      final endX = cx + (i * 100);
+      canvas.drawLine(
+        Offset(startX, horizonY), 
+        Offset(endX, size.height), 
+        gridPaint
+      );
     }
-    path.close();
 
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = const Color(0xFFCC1C3A)
-        ..style = PaintingStyle.fill,
-    );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = Colors.white.withOpacity(0.25)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 0.8,
-    );
-  }
-
-  double _cos(double a) =>
-      (a < 3.14159) ? -1 + 2 * a / 3.14159 : 1 - 2 * (a - 3.14159) / 3.14159;
-  double _sin(double a) {
-    final b = a - 1.5708;
-    return _cos(b < 0 ? b + 6.28318 : b);
-  }
-
-  @override
-  bool shouldRepaint(_) => false;
-}
-
-//  Halftone accent (AppBar) 
-class _HalftoneAccent extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF7B2FBE).withOpacity(0.6);
-    const dotR = 2.5;
-    const gap  = 7.0;
-    for (double x = 0; x < size.width; x += gap) {
-      for (double y = 0; y < size.height; y += gap) {
-        canvas.drawCircle(Offset(x, y), dotR, paint);
-      }
+    // Horizontal Scrolling Lines
+    for (int i = 0; i < 8; i++) {
+      // Calculate depth based on time 't' to create forward motion
+      double progress = (i + t) / 8;
+      double yPos = horizonY + (size.height - horizonY) * (progress * progress); // curve for perspective
+      
+      canvas.drawLine(
+        Offset(0, yPos), 
+        Offset(size.width, yPos), 
+        Paint()
+          ..color = const Color(0xFFFF003C).withOpacity(0.2 * progress)
+          ..strokeWidth = 1.0 + (2.0 * progress)
+      );
     }
   }
 
   @override
-  bool shouldRepaint(_) => false;
+  bool shouldRepaint(_RetroWavePainter old) => old.t != t;
 }
