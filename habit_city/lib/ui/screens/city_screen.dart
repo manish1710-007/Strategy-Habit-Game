@@ -12,6 +12,24 @@ class CityScreen extends StatefulWidget {
   State<CityScreen> createState() => _CityScreenState();
 }
 
+// The generic path for ANY manually created city
+const List<CityTier> genericEvolutionPath = [
+  CityTier(levelThreshold: 1, emoji: "⛺", title: "Camp"),
+  CityTier(levelThreshold: 3, emoji: "🪵", title: "Cabin"),
+  CityTier(levelThreshold: 5, emoji: "🏡", title: "Village"),
+  CityTier(levelThreshold: 10, emoji: "🏬", title: "Town Center"),
+  CityTier(levelThreshold: 15, emoji: "🏢", title: "City District"),
+  CityTier(levelThreshold: 20, emoji: "🏙️", title: "Metropolis"),
+];
+
+// Custom path specifically for the "Gym" district
+const List<CityTier> gymEvolutionPath = [
+  CityTier(levelThreshold: 1, emoji: "👟", title: "Jogger"),
+  CityTier(levelThreshold: 5, emoji: "🏋️", title: "Home Gym"),
+  CityTier(levelThreshold: 10, emoji: "🥋", title: "Dojo"),
+  CityTier(levelThreshold: 20, emoji: "🏟️", title: "Colosseum"),
+];
+
 class _CityScreenState extends State<CityScreen>
     with SingleTickerProviderStateMixin {
 
@@ -22,47 +40,27 @@ class _CityScreenState extends State<CityScreen>
   static const _neonRed  = Color(0xFFFF003C); 
   static const _white    = Color(0xFFE0E5FF); 
 
-  // City data (Zeroed out per request)
+  // City data initialized with the new XP evolution engine
   final List<_CityData> _cities = [
     _CityData(
       name: "Gym",
-      emoji: "🏋️",
       icon: Icons.fitness_center_rounded,
       desc: "Train your body. Build raw power.",
       color: const Color(0xFFFF003C), // Neon Red
-      level: 0,
-      progress: 0.0,
       tag: "BODY",
-    ),
-    _CityData(
-      name: "Library",
-      emoji: "📚",
-      icon: Icons.menu_book_rounded,
-      desc: "Expand your knowledge every day.",
-      color: const Color(0xFF00F0FF), // Neon Cyan
-      level: 0,
-      progress: 0.0,
-      tag: "KNOWLEDGE",
+      isAuto: true,
+      currentXp: 0,
+      evolutionPath: gymEvolutionPath,
     ),
     _CityData(
       name: "Mind",
-      emoji: "🧠",
       icon: Icons.self_improvement_rounded,
       desc: "Meditate, reflect, stay sharp.",
       color: const Color(0xFFFF00FF), // Magenta
-      level: 0,
-      progress: 0.0,
       tag: "MENTAL",
-    ),
-    _CityData(
-      name: "Health",
-      emoji: "❤️",
-      icon: Icons.favorite_rounded,
-      desc: "Sleep, hydration, and nutrition.",
-      color: const Color(0xFF00FFAA), // Neon Green
-      level: 0,
-      progress: 0.0,
-      tag: "HEALTH",
+      isAuto: true,
+      currentXp: 0,
+      evolutionPath: genericEvolutionPath,
     ),
   ];
 
@@ -94,7 +92,20 @@ class _CityScreenState extends State<CityScreen>
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => _CityDetailSheet(city: city),
+      builder: (_) => StatefulBuilder(
+        builder: (BuildContext context, StateSetter setModalState) {
+          return _CityDetailSheet(
+            city: city,
+            onTaskComplete: () {
+              // Add 25 XP when clicked!
+              setState(() {
+                city.currentXp += 25;
+              });
+              setModalState(() {}); // Re-render bottom sheet live
+            },
+          );
+        }
+      ),
     );
   }
 
@@ -133,7 +144,6 @@ class _CityScreenState extends State<CityScreen>
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
-                  // Home Button
                   GestureDetector(
                     onTap: () => widget.onNavigate(0), 
                     child: Container(
@@ -160,7 +170,6 @@ class _CityScreenState extends State<CityScreen>
                     ),
                   ),
                   const Spacer(),
-                  // City count
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
@@ -187,23 +196,17 @@ class _CityScreenState extends State<CityScreen>
 
       body: Stack(
         children: [
-          // Cyber Background
           Positioned.fill(child: CustomPaint(painter: _CyberGridPainter())),
-
           CustomScrollView(
             slivers: [
-              // City skyline hero 
               SliverToBoxAdapter(
                 child: _CitySkylineBanner(
                   totalCities: _cities.length,
-                  avgLevel: "0.0", // Hardcoded to 0 for fresh start
+                  avgLevel: "0.0", 
                   pulseAnim: _pulseAnim,
                 ),
               ),
-
               const SliverToBoxAdapter(child: SizedBox(height: 16)),
-
-              // Section label 
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -231,20 +234,14 @@ class _CityScreenState extends State<CityScreen>
                   ),
                 ),
               ),
-
               const SliverToBoxAdapter(child: SizedBox(height: 12)),
-
-              // NEW CITY tile (top) 
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: _NewCityTile(onTap: _addNewCity),
                 ),
               ),
-
               const SliverToBoxAdapter(child: SizedBox(height: 10)),
-
-              // City grid 
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
                 sliver: SliverGrid(
@@ -252,7 +249,7 @@ class _CityScreenState extends State<CityScreen>
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
-                    childAspectRatio: 0.85, // Slightly sleeker proportion
+                    childAspectRatio: 0.85, 
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) => AnimatedBuilder(
@@ -298,7 +295,7 @@ class _CitySkylineBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      height: 130, // Slightly slimmer
+      height: 130, 
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
@@ -310,12 +307,9 @@ class _CitySkylineBanner extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          // Cyber lines
           Positioned.fill(
             child: CustomPaint(painter: _BannerLinePainter()),
           ),
-
-          // Pixel city skyline silhouette
           Positioned(
             bottom: 0, left: 0, right: 0,
             child: CustomPaint(
@@ -323,8 +317,6 @@ class _CitySkylineBanner extends StatelessWidget {
               painter: _SkylinePainter(),
             ),
           ),
-
-          // Pulsing glow orb
           Positioned(
             right: 20, top: 20,
             child: AnimatedBuilder(
@@ -344,14 +336,12 @@ class _CitySkylineBanner extends StatelessWidget {
               ),
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Top: title + tagline
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -376,8 +366,6 @@ class _CitySkylineBanner extends StatelessWidget {
                     ),
                   ],
                 ),
-
-                // Bottom: stat chips
                 Row(
                   children: [
                     _BannerStat(
@@ -448,7 +436,6 @@ class _BannerStat extends StatelessWidget {
   }
 }
 
-// New city tile (top CTA) - Slimmer and smoother
 class _NewCityTile extends StatelessWidget {
   final VoidCallback onTap;
 
@@ -462,7 +449,7 @@ class _NewCityTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 50, // Slimmer height
+        height: 50, 
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: _neonBlue.withOpacity(0.5), width: 1.5),
@@ -492,7 +479,6 @@ class _NewCityTile extends StatelessWidget {
   }
 }
 
-// City tile - with dynamic pulse value
 class _CityTile extends StatelessWidget {
   final _CityData data;
   final double pulseValue;
@@ -509,7 +495,6 @@ class _CityTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Determine dynamic glow based on the pulse animation
     final double currentGlow = 4 + (12 * pulseValue);
     
     return GestureDetector(
@@ -534,7 +519,6 @@ class _CityTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           child: Stack(
             children: [
-              // Subtle colored background gradient
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
@@ -549,13 +533,11 @@ class _CityTile extends StatelessWidget {
                   ),
                 )
               ),
-
               Padding(
                 padding: const EdgeInsets.all(14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Icon + level badge row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -567,10 +549,9 @@ class _CityTile extends StatelessWidget {
                             border: Border.all(color: data.color.withOpacity(0.5), width: 1.2),
                           ),
                           child: Center(
-                            child: Text(data.emoji, style: const TextStyle(fontSize: 20)),
+                            child: Text(data.currentTier.emoji, style: const TextStyle(fontSize: 20)),
                           ),
                         ),
-                        // Level badge
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
@@ -590,10 +571,7 @@ class _CityTile extends StatelessWidget {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 12),
-
-                    // Name
                     Text(
                       data.name.toUpperCase(),
                       style: const TextStyle(
@@ -605,10 +583,7 @@ class _CityTile extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-
                     const SizedBox(height: 4),
-
-                    // Desc
                     Text(
                       data.desc,
                       style: TextStyle(
@@ -619,10 +594,7 @@ class _CityTile extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-
                     const Spacer(),
-
-                    // Tag pill
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
@@ -640,10 +612,7 @@ class _CityTile extends StatelessWidget {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 8),
-
-                    // Progress bar
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -692,15 +661,15 @@ class _CityTile extends StatelessWidget {
   }
 }
 
-// City detail bottom sheet 
 class _CityDetailSheet extends StatelessWidget {
   final _CityData city;
+  final VoidCallback onTaskComplete;
 
   static const _black    = Color(0xFF050508);
   static const _white    = Color(0xFFE0E5FF);
   static const _neonBlue = Color(0xFF00F0FF);
 
-  const _CityDetailSheet({required this.city});
+  const _CityDetailSheet({required this.city, required this.onTaskComplete});
 
   @override
   Widget build(BuildContext context) {
@@ -719,7 +688,6 @@ class _CityDetailSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Handle
           Center(
             child: Container(
               width: 40, height: 4,
@@ -730,8 +698,6 @@ class _CityDetailSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-
-          // Header
           Row(
             children: [
               Container(
@@ -745,7 +711,7 @@ class _CityDetailSheet extends StatelessWidget {
                   ],
                 ),
                 child: Center(
-                  child: Text(city.emoji, style: const TextStyle(fontSize: 28)),
+                  child: Text(city.currentTier.emoji, style: const TextStyle(fontSize: 28)),
                 ),
               ),
               const SizedBox(width: 16),
@@ -754,11 +720,11 @@ class _CityDetailSheet extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      city.name.toUpperCase(),
+                      "${city.name.toUpperCase()} [${city.currentTier.title.toUpperCase()}]",
                       style: const TextStyle(
                         color: _white,
                         fontWeight: FontWeight.w900,
-                        fontSize: 18,
+                        fontSize: 16,
                         letterSpacing: 2,
                       ),
                     ),
@@ -773,7 +739,6 @@ class _CityDetailSheet extends StatelessWidget {
                   ],
                 ),
               ),
-              // Level orb
               Container(
                 width: 52, height: 52,
                 decoration: BoxDecoration(
@@ -799,10 +764,7 @@ class _CityDetailSheet extends StatelessWidget {
               ),
             ],
           ),
-
           const SizedBox(height: 24),
-
-          // Progress section
           Text(
             "UPGRADE PROTOCOL",
             style: TextStyle(
@@ -813,7 +775,6 @@ class _CityDetailSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          // Segmented bar
           Row(
             children: List.generate(10, (i) {
               final filled = i < (city.progress * 10).round();
@@ -842,25 +803,19 @@ class _CityDetailSheet extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(height: 20),
-
-          // Stat row (Zeroed out)
           Row(
             children: [
               _SheetStat(label: "MISSIONS", value: "0", color: city.color),
               const SizedBox(width: 10),
               _SheetStat(label: "STREAK", value: "0d 🔥", color: Colors.grey),
               const SizedBox(width: 10),
-              _SheetStat(label: "TOTAL XP", value: "0", color: _neonBlue),
+              _SheetStat(label: "TOTAL XP", value: "${city.currentXp}", color: _neonBlue),
             ],
           ),
-
           const SizedBox(height: 24),
-
-          // Evolve button (Sleeker, glowy)
           GestureDetector(
-            onTap: () => Navigator.pop(context),
+            onTap: onTaskComplete, // Wire up the XP button
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 14),
@@ -874,7 +829,7 @@ class _CityDetailSheet extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  "⚡ INSUFFICIENT XP TO EVOLVE",
+                  "⚡ EXECUTE TASK (+25 XP)",
                   style: TextStyle(
                     color: city.color,
                     fontWeight: FontWeight.w900,
@@ -937,7 +892,6 @@ class _SheetStat extends StatelessWidget {
   }
 }
 
-// New city bottom sheet 
 class _NewCitySheet extends StatefulWidget {
   final void Function(_CityData) onAdd;
   const _NewCitySheet({required this.onAdd});
@@ -961,10 +915,10 @@ class _NewCitySheetState extends State<_NewCitySheet> {
 
   final _emojis = ["🏙️","⚔️","🎵","💻","🌿","🧪","🏄","🎭","🌙","🚀"];
   final _colors = [
-    const Color(0xFF00F0FF), // Cyan
-    const Color(0xFFFF003C), // Red
-    const Color(0xFFFF00FF), // Magenta
-    const Color(0xFF00FFAA), // Green
+    const Color(0xFF00F0FF), 
+    const Color(0xFFFF003C), 
+    const Color(0xFFFF00FF), 
+    const Color(0xFF00FFAA), 
     Colors.orangeAccent,
     Colors.yellowAccent,
   ];
@@ -991,7 +945,6 @@ class _NewCitySheetState extends State<_NewCitySheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Handle
             Center(
               child: Container(
                 width: 40, height: 4,
@@ -1002,7 +955,6 @@ class _NewCitySheetState extends State<_NewCitySheet> {
               ),
             ),
             const SizedBox(height: 20),
-
             const Text(
               "FOUND NEW DISTRICT",
               style: TextStyle(
@@ -1017,27 +969,19 @@ class _NewCitySheetState extends State<_NewCitySheet> {
               "Initialize parameters for the new zone.",
               style: TextStyle(color: _white.withOpacity(0.5), fontSize: 12),
             ),
-
             const SizedBox(height: 20),
-
-            // Name field
             _GlowTextField(
               controller: _nameCtrl,
               hint: "District name...",
               color: _neonBlue,
             ),
             const SizedBox(height: 12),
-
-            // Desc field
             _GlowTextField(
               controller: _descCtrl,
               hint: "Short description...",
               color: _neonRed,
             ),
-
             const SizedBox(height: 20),
-
-            // Emoji picker
             const _SectionLabel(label: "SELECT ICON"),
             const SizedBox(height: 10),
             Wrap(
@@ -1064,10 +1008,7 @@ class _NewCitySheetState extends State<_NewCitySheet> {
                 );
               }).toList(),
             ),
-
             const SizedBox(height: 20),
-
-            // Color picker
             const _SectionLabel(label: "DISTRICT COLOR"),
             const SizedBox(height: 10),
             Wrap(
@@ -1092,10 +1033,7 @@ class _NewCitySheetState extends State<_NewCitySheet> {
                 );
               }).toList(),
             ),
-
             const SizedBox(height: 20),
-
-            // Tag picker
             const _SectionLabel(label: "CATEGORY TAG"),
             const SizedBox(height: 10),
             Wrap(
@@ -1128,24 +1066,27 @@ class _NewCitySheetState extends State<_NewCitySheet> {
                 );
               }).toList(),
             ),
-
             const SizedBox(height: 28),
-
-            // Create button (Sleeker glow button)
             GestureDetector(
               onTap: () {
                 if (_nameCtrl.text.trim().isEmpty) return;
+                
+                // Construct the newly configured _CityData
                 widget.onAdd(_CityData(
                   name: _nameCtrl.text.trim(),
-                  emoji: _selectedEmoji,
                   icon: Icons.location_city_rounded,
                   desc: _descCtrl.text.trim().isEmpty
                       ? "A new district in your grid."
                       : _descCtrl.text.trim(),
                   color: _selectedColor,
-                  level: 0,
-                  progress: 0.0,
                   tag: _selectedTag,
+                  isAuto: false, // Manual city
+                  currentXp: 0,
+                  // Uses the selected emoji as the starting point, but follows generic rules
+                  evolutionPath: [
+                    CityTier(levelThreshold: 1, emoji: _selectedEmoji, title: "Base"),
+                    ...genericEvolutionPath.skip(1), // Adds the rest of the generic path
+                  ],
                 ));
               },
               child: Container(
@@ -1231,30 +1172,62 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
-// Data model 
-class _CityData {
-  final String name;
+// THE NEW DATA MODEL (Replaces old _CityData entirely)
+class CityTier {
+  final int levelThreshold;
   final String emoji;
-  final IconData icon;
-  final String desc;
-  final Color color;
-  final int level;
-  final double progress;
-  final String tag;
+  final String title;
 
-  const _CityData({
-    required this.name,
+  const CityTier({
+    required this.levelThreshold,
     required this.emoji,
-    required this.icon,
-    required this.desc,
-    required this.color,
-    required this.level,
-    required this.progress,
-    required this.tag,
+    required this.title,
   });
 }
 
-// Cyber Grid Background Painter
+class _CityData {
+  final String name;
+  final IconData icon;
+  final String desc;
+  final Color color;
+  final String tag;
+  final bool isAuto; 
+  
+  // Dynamic stats
+  int currentXp;
+  final int xpPerLevel; 
+  
+  final List<CityTier> evolutionPath;
+
+  _CityData({
+    required this.name,
+    required this.icon,
+    required this.desc,
+    required this.color,
+    required this.tag,
+    this.isAuto = false,
+    this.currentXp = 0,
+    this.xpPerLevel = 100,
+    required this.evolutionPath,
+  });
+
+  int get level => (currentXp ~/ xpPerLevel) + 1; 
+  
+  double get progress => (currentXp % xpPerLevel) / xpPerLevel;
+
+  CityTier get currentTier {
+    CityTier activeTier = evolutionPath.first;
+    for (var tier in evolutionPath) {
+      if (level >= tier.levelThreshold) {
+        activeTier = tier;
+      } else {
+        break;
+      }
+    }
+    return activeTier;
+  }
+}
+
 class _CyberGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -1275,7 +1248,6 @@ class _CyberGridPainter extends CustomPainter {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
     }
   }
-
   @override
   bool shouldRepaint(_) => false;
 }
@@ -1299,13 +1271,11 @@ class _BannerLinePainter extends CustomPainter {
       );
     }
   }
-
   double _cos(double a) => (a < 3.14159) ? -1 + 2 * a / 3.14159 : 1 - 2 * (a - 3.14159) / 3.14159;
   double _sin(double a) {
     final b = a - 1.5708;
     return _cos(b < 0 ? b + 6.28318 : b);
   }
-
   @override
   bool shouldRepaint(_) => false;
 }
@@ -1320,7 +1290,6 @@ class _SkylinePainter extends CustomPainter {
     final path = Path();
     path.moveTo(0, size.height);
 
-    // Silhouette buildings
     final buildings = [
       [0.0, 1.0], [0.0, 0.55], [0.06, 0.55], [0.06, 0.35],
       [0.10, 0.35],[0.10, 0.45],[0.16, 0.45],[0.16, 0.2],
@@ -1341,7 +1310,6 @@ class _SkylinePainter extends CustomPainter {
     path.close();
     canvas.drawPath(path, paint);
 
-    // Window dots
     final winPaint = Paint()
       ..color = const Color(0xFF00F0FF).withOpacity(0.3);
     final rng = [0.08, 0.18, 0.30, 0.40, 0.54, 0.63, 0.74, 0.83, 0.93];
@@ -1357,7 +1325,6 @@ class _SkylinePainter extends CustomPainter {
       }
     }
   }
-
   @override
   bool shouldRepaint(_) => false;
 }
