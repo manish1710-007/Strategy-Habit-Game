@@ -66,6 +66,7 @@ flutter:
     - assets/waifu_idle.png
     - assets/waifu_smile.png
     - assets/waifu_excited.png
+    - assets/hatsune miku .gif
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg

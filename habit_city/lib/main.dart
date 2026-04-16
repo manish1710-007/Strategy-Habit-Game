@@ -34,6 +34,7 @@ class HabitQuestApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: _buildTheme(),
       home: const MainNavigation(),
+
     );
   }
 
@@ -93,6 +94,7 @@ class _MainNavigationState extends State<MainNavigation> {
     // 1 -> Missions
     // 2 -> City
     // 3 -> Profile
+    // IndexedStack indices: 0: Home, 1: Dashboard, 2: Missions, 3: City, 4: Profile
     setState(() {
       _currentIndex = index + 1; // shift because Home is index 0
     });
@@ -104,7 +106,10 @@ class _MainNavigationState extends State<MainNavigation> {
       body: IndexedStack(
         index: _currentIndex,
         children: [
-          HomeScreen(onNavigate: switchTab),      // Index 0
+          HomeScreen(
+            gifAssetPath: 'assets/hatsune miku .gif',
+            onNavigate: switchTab,
+          ),// Index 0
           DashboardScreen(onNavigate: switchTab), // Index 1
           MissionsScreen(onNavigate: switchTab),  // Index 2
           CityScreen(onNavigate: switchTab),      // Index 3

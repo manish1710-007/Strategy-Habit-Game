@@ -1,336 +1,187 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final Function(int) onNavigate;
-  const HomeScreen({super.key, required this.onNavigate});
+  final String? gifAssetPath;
+  
+  const HomeScreen({
+    super.key, 
+    required this.onNavigate,
+    this.gifAssetPath,
 
-  // 🎨 Enhanced Palette (Neon + Neo-Brutalism)
-  static const _black = Color(0xFF0A0008);
-  static const _deepPurple = Color(0xFF2D0057);
-  static const _purple = Color(0xFF7B2FBE);
-  static const _red = Color(0xFFCC1C3A);
-  static const _liteBlue = Color(0xFF6EC6F5);
-  static const _pink = Color(0xFFFF77E9);
-  static const _white = Color(0xFFF0E6FF);
-  static const _neonCyan = Color(0xFF00F0FF); // NEW: Cyberpunk accent
-  static const _neonYellow = Color(0xFFFFD700); // NEW: Pop accent
+  });
+
+   
+  static const _voidBlack = Color(0xFF050011);
+  static const _deepVoid = Color(0xFF0D0033);
+  static const _electricPurple = Color(0xFFB829F7);
+  static const _hotPink = Color(0xFFFF00A0);
+  static const _cyanBlast = Color(0xFF00F0FF);
+  static const _acidGreen = Color(0xFF39FF14);
+  static const _laserRed = Color(0xFFFF0040);
+  static const _solarYellow = Color(0xFFFFE600);
+  static const _whiteOut = Color(0xFFFFFFFF);
+  static const _ghostWhite = Color(0xFFE0E0FF);
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late AnimationController _floatController;
+  late AnimationController _scanController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
+
+    _floatController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3000),
+    )..repeat(reverse: true);
+
+    _scanController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 4000),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    _floatController.dispose();
+    _scanController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _black,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // 🌌 Chaotic Background Layer
-            Positioned.fill(
-              child: CustomPaint(painter: _NeoGrungeBgPainter()),
+      backgroundColor: HomeScreen._voidBlack,
+      body: Stack(
+        children: [
+          // 
+          Positioned.fill(
+            child: AnimatedBuilder(
+              animation: _pulseController,
+              builder: (context, child) {
+                return CustomPaint(
+                  painter: _ComicBookBgPainter(
+                    pulseValue: _pulseController.value,
+                  ),
+                  size: Size.infinite,
+                );
+              },
             ),
+          ),
 
-            // 🎭 Decorative "Stickers" (Randomly positioned comic elements)
-            ...List.generate(5, (i) => _RandomSticker(i)),
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _SpeedLinesPainter(),
+            ),
+          ),
 
-            // 📦 Main Content Layer
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+          ...List.generate(6, (i) => _FloatingNeonOrb(index: i)),
+
+          
+          // Main Content                                       
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const SizedBox(height: 16),
+
+                  // Comic Book Issue Badge
+                  _ComicIssueBadge(),
+
+                  const SizedBox(height: 12),
+
+                  // Glitch Title with Neon Bloom
+                  _NeonGlitchTitle(
+                    text: "HABIT CITY",
+                    fontSize: 42,
+                  ),
+
+                  // Subtitle with typewriter cursor
+                  _TypewriterSubtitle(
+                    text: "Build Your Life Like A Strategy Game ⚡",
+                  ),
+
                   const SizedBox(height: 20),
 
-                  // 🏷️ Glitch Header
-                  Transform.rotate(
-                    angle: -0.02, // Slight crooked tilt
-                    child: _GlitchText(
-                      text: "HABIT CITY",
-                      fontSize: 32,
-                      color: _white,
-                      glowColor: _neonCyan,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Transform.rotate(
-                    angle: 0.015,
-                    child: Text(
-                      "Build your life like a strategy game ⚡",
-                      style: TextStyle(
-                        color: _liteBlue.withOpacity(0.9),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 1.5,
-                        fontFamily: 'Courier', // Typewriter vibe
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  // 💬 Comic-Style Quote Box
-                  _NeoQuoteBox(),
+                
+                  //   COMIC BOOK QUOTE BOX - With Glow Border                     
+    
+                  _NeonQuoteBox(),
 
                   const Spacer(),
 
-                  // 🗼 Character + City Visual (Blended Waifu Area)
-                  Transform.rotate(
-                    angle: 0.03,
-                    child: _CharacterCityBlend(),
+                  
+                  //   HERO ZONE: GIF + Character Integration                      
+                  
+                  _HeroGifZone(
+                    gifAssetPath: widget.gifAssetPath,
+                    floatController: _floatController,
                   ),
 
                   const Spacer(),
 
-                  // 🎮 Neo-Brutalist Action Buttons
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 30.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _BrutalistButton(
-                          icon: Icons.dashboard_rounded,
-                          label: "DASH",
-                          color: _red,
-                          onTap: () => onNavigate(1),
-                        ),
-                        _BrutalistButton(
-                          icon: Icons.flag_rounded,
-                          label: "MISSIONS",
-                          color: _purple,
-                          onTap: () => onNavigate(2),
-                        ),
-                        _BrutalistButton(
-                          icon: Icons.location_city_rounded,
-                          label: "CITY",
-                          color: _liteBlue,
-                          onTap: () => onNavigate(3),
-                        ),
-                        _BrutalistButton(
-                          icon: Icons.person_rounded,
-                          label: "PROFILE",
-                          color: _pink,
-                          onTap: () => onNavigate(4),
-                        ),
-                      ],
-                    ),
-                  ),
+                  
+                  //   NEON ACTION BUTTONS - Comic Book Style                    
+        
+                  _NeonButtonRow(onNavigate: widget.onNavigate),
+
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
-
-            // ✨ Scanline Overlay (Retro CRT effect)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: List.generate(
-                        20,
-                        (_) => _black.withOpacity(0.03),
-                      ),
-                      stops: List.generate(20, (i) => i / 20),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// 🎭 Random Comic Sticker Widget (Chaotic Decoration)
-class _RandomSticker extends StatelessWidget {
-  final int index;
-  const _RandomSticker(this.index);
-
-  @override
-  Widget build(BuildContext context) {
-    final rng = math.Random(index);
-    final positions = [
-      Offset(rng.nextDouble() * 80 + 10, rng.nextDouble() * 60 + 10),
-    ][0];
-    final rotations = [-0.1, 0.08, -0.05, 0.12, -0.07];
-    final stickers = ['💥', '✨', '⚡', '🎯', '🔥'];
-
-    return Positioned(
-      left: positions.dx * MediaQuery.of(context).size.width / 100,
-      top: positions.dy * MediaQuery.of(context).size.height / 100,
-      child: Transform.rotate(
-        angle: rotations[index % rotations.length],
-          child: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: HomeScreen._white,
-            border: Border.all(color: HomeScreen._black, width: 2),
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: HomeScreen._black,
-                offset: const Offset(3, 3),
-                blurRadius: 0,
-              ),
-            ],
           ),
-          child: Text(
-            stickers[index % stickers.length],
-            style: const TextStyle(fontSize: 20),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
-// 💬 Neo-Brutalist Quote Box
-class _NeoQuoteBox extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Transform.rotate(
-      angle: -0.015,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: HomeScreen._deepPurple.withOpacity(0.8),
-          border: Border.all(color: HomeScreen._black, width: 3), // Thick border!
-          boxShadow: [
-            BoxShadow(
-              color: HomeScreen._black,
-              offset: const Offset(5, 5), // Hard shadow
-              blurRadius: 0,
-            ),
-            BoxShadow(
-              color: HomeScreen._neonCyan.withOpacity(0.4),
-              blurRadius: 15,
-              spreadRadius: -5,
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Jagged accent bar
-            ClipPath(
-              clipper: _JaggedClipper(),
-              child: Container(
-                width: 6,
-                height: 40,
-                color: HomeScreen._neonYellow,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "⚡ DAILY INSIGHT",
-                    style: TextStyle(
-                      color: HomeScreen._neonCyan,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2,
-                      fontFamily: 'Courier',
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    "You're 1 habit away from leveling up 🚀",
-                    style: TextStyle(
-                      color: HomeScreen._white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      height: 1.3,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Comic burst icon
-            const Icon(Icons.flash_on, color: Colors.yellow, size: 24),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// 🗼 Character + City Blend (Waifu Integration Zone)
-class _CharacterCityBlend extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 220,
-      child: Stack(
-        alignment: Alignment.bottomCenter,
-        children: [
-          // Halftone pattern overlay
-          Positioned.fill(
-            child: ColorFiltered(
-              colorFilter: ColorFilter.mode(
-                HomeScreen._purple.withOpacity(0.15),
-                BlendMode.overlay,
-              ),
-              child: Image.asset(
-                'assets/halftone_pattern.png', // Add this asset!
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(),
-              ),
-            ),
-          ),
           
-          // Character silhouette placeholder (Replace with your waifu!)
-          Positioned(
-            bottom: 0,
-            child: ClipPath(
-              clipper: _JaggedImageClipper(), // Jagged cutout effect
-              child: Container(
-                width: 160,
-                height: 180,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      HomeScreen._pink.withOpacity(0.6),
-                      HomeScreen._liteBlue.withOpacity(0.4),
-                    ],
-                  ),
-                  border: Border.all(
-                    color: HomeScreen._white.withOpacity(0.7),
-                    width: 2,
-                  ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.favorite,
-                    color: Colors.white70,
-                    size: 60,
-                  ),
-                ),
+          // CRT Scanline & Chromatic Aberration Overlay        
+          Positioned.fill(
+            child: IgnorePointer(
+              child: AnimatedBuilder(
+                animation: _scanController,
+                builder: (context, child) {
+                  return CustomPaint(
+                    painter: _CRTPainter(
+                      scanPosition: _scanController.value,
+                    ),
+                  );
+                },
               ),
             ),
           ),
 
-          // Floating neon orb
-          Positioned(
-            top: 20,
-            right: 40,
-            child: Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: HomeScreen._neonCyan.withOpacity(0.3),
-                border: Border.all(color: HomeScreen._neonCyan, width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: HomeScreen._neonCyan,
-                    blurRadius: 20,
-                    spreadRadius: 5,
+          
+          //  Vignette & Film Grain                              
+          
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment.center,
+                    radius: 1.2,
+                    colors: [
+                      Colors.transparent,
+                      Colors.transparent,
+                      HomeScreen._voidBlack.withOpacity(0.4),
+                      HomeScreen._voidBlack.withOpacity(0.8),
+                    ],
+                    stops: const [0.0, 0.5, 0.8, 1.0],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -340,200 +191,146 @@ class _CharacterCityBlend extends StatelessWidget {
   }
 }
 
-// 🎮 Neo-Brutalist Button (Thick borders, hard shadows, POP effect)
-class _BrutalistButton extends StatefulWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback onTap;
+//   COMIC BOOK BACKGROUND PAINTER                                
+class _ComicBookBgPainter extends CustomPainter {
+  final double pulseValue;
 
-  const _BrutalistButton({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onTap,
-  });
+  _ComicBookBgPainter({required this.pulseValue});
 
-  @override
-  State<_BrutalistButton> createState() => _BrutalistButtonState();
-}
-
-class _BrutalistButtonState extends State<_BrutalistButton> {
-  bool _pressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) {
-        setState(() => _pressed = false);
-        widget.onTap();
-      },
-      onTapCancel: () => setState(() => _pressed = false),
-      child: Transform.rotate(
-        angle: _pressed ? 0.02 : -0.02, // Slight wobble on press
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 80),
-          transform: Matrix4.translationValues(
-            0,
-            _pressed ? 4 : 0,
-            0,
-          ),
-          decoration: BoxDecoration(
-            color: widget.color,
-            border: Border.all(color: HomeScreen._black, width: 3),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: HomeScreen._black,
-                offset: Offset(_pressed ? 0 : 5, _pressed ? 0 : 5),
-                blurRadius: 0, // Hard shadow = brutalist!
-              ),
-              if (!_pressed)
-                BoxShadow(
-                  color: widget.color.withOpacity(0.5),
-                  blurRadius: 15,
-                  spreadRadius: -3,
-                ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(widget.icon, color: HomeScreen._black, size: 22),
-                const SizedBox(height: 4),
-                Text(
-                  widget.label,
-                  style: TextStyle(
-                    color: HomeScreen._black,
-                    fontSize: 9,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1,
-                    fontFamily: 'BebasNeue', // Add this font!
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// 🌌 Neo-Grunge Background Painter
-class _NeoGrungeBgPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    // Base black
-    canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      Paint()..color = HomeScreen._black,
+    // Base gradient
+    final baseGradient = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [
+        HomeScreen._deepVoid,
+        HomeScreen._voidBlack,
+        HomeScreen._deepVoid.withBlue(80),
+      ],
     );
 
-    // Grid lines (retro-futuristic)
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Paint()..shader = baseGradient.createShader(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+      ),
+    );
+
+    // Halftone dot pattern
+    final dotPaint = Paint()
+      ..color = HomeScreen._electricPurple.withOpacity(0.1 + pulseValue * 0.05)
+      ..style = PaintingStyle.fill;
+
+    for (double x = 0; x < size.width; x += 20) {
+      for (double y = 0; y < size.height; y += 20) {
+        final radius = 2 + math.sin((x + y) * 0.02) * 1.5;
+        canvas.drawCircle(Offset(x, y), radius.abs(), dotPaint);
+      }
+    }
+
+    // Neon grid lines
     final gridPaint = Paint()
-      ..color = HomeScreen._deepPurple.withOpacity(0.3)
+      ..color = HomeScreen._cyanBlast.withOpacity(0.08)
       ..strokeWidth = 1;
 
-    for (var i = 0.0; i < size.width; i += 40) {
+    for (var i = 0.0; i < size.width; i += 50) {
       canvas.drawLine(Offset(i, 0), Offset(i, size.height), gridPaint);
     }
-    for (var i = 0.0; i < size.height; i += 40) {
+    for (var i = 0.0; i < size.height; i += 50) {
       canvas.drawLine(Offset(0, i), Offset(size.width, i), gridPaint);
     }
 
-    // Radial neon glow
-    canvas.drawCircle(
-      Offset(size.width * 0.8, size.height * 0.2),
-      size.width * 0.4,
-      Paint()
-        ..shader = RadialGradient(
-          colors: [
-            HomeScreen._neonCyan.withOpacity(0.15),
-            Colors.transparent,
-          ],
-        ).createShader(
-          Rect.fromCircle(
-            center: Offset(size.width * 0.8, size.height * 0.2),
-            radius: size.width * 0.4,
-          ),
+    // Radial glow bursts
+    final glowPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          HomeScreen._hotPink.withOpacity(0.15 * pulseValue),
+          HomeScreen._electricPurple.withOpacity(0.1 * pulseValue),
+          Colors.transparent,
+        ],
+        stops: const [0.0, 0.5, 1.0],
+      ).createShader(
+        Rect.fromCircle(
+          center: Offset(size.width * 0.2, size.height * 0.3),
+          radius: size.width * 0.6,
         ),
+      );
+
+    canvas.drawCircle(
+      Offset(size.width * 0.2, size.height * 0.3),
+      size.width * 0.6,
+      glowPaint,
     );
 
-    // Noise texture overlay (subtle grain)
-    final noisePaint = Paint()
-      ..color = HomeScreen._white.withOpacity(0.03)
-      ..blendMode = BlendMode.overlay;
-    // Note: For real noise, use an image asset or shader
+    // Second glow burst
+    final glowPaint2 = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          HomeScreen._cyanBlast.withOpacity(0.12 * (1 - pulseValue)),
+          Colors.transparent,
+        ],
+      ).createShader(
+        Rect.fromCircle(
+          center: Offset(size.width * 0.8, size.height * 0.7),
+          radius: size.width * 0.5,
+        ),
+      );
+
+    canvas.drawCircle(
+      Offset(size.width * 0.8, size.height * 0.7),
+      size.width * 0.5,
+      glowPaint2,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _ComicBookBgPainter oldDelegate) => true;
+}
+
+//   SPEED LINES PAINTER - Action Burst Effect                    
+class _SpeedLinesPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width * 0.5, size.height * 0.6);
+    final linePaint = Paint()
+      ..color = HomeScreen._whiteOut.withOpacity(0.03)
+      ..strokeWidth = 1;
+
+    // Radiating speed lines
+    for (int i = 0; i < 24; i++) {
+      final angle = (i / 24) * 2 * math.pi;
+      final startRadius = size.width * 0.3;
+      final endRadius = size.width * 0.9;
+
+      final start = Offset(
+        center.dx + math.cos(angle) * startRadius,
+        center.dy + math.sin(angle) * startRadius,
+      );
+      final end = Offset(
+        center.dx + math.cos(angle) * endRadius,
+        center.dy + math.sin(angle) * endRadius,
+      );
+
+      canvas.drawLine(start, end, linePaint);
+    }
   }
 
   @override
   bool shouldRepaint(_) => false;
 }
 
-// ✂️ Jagged Clipper for "torn paper" effect
-class _JaggedClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.moveTo(0, 0);
-    for (var i = 0; i < size.width; i += 8) {
-      final jitter = (i % 16 == 0) ? 3 : -3;
-      path.lineTo(i.toDouble(), jitter.toDouble());
-    }
-    path.lineTo(size.width, size.height);
-    path.lineTo(0, size.height);
-    path.close();
-    return path;
-  }
+
+//   FLOATING NEON ORBS                                           
+class _FloatingNeonOrb extends StatefulWidget {
+  final int index;
+  const _FloatingNeonOrb({required this.index});
 
   @override
-  bool shouldReclip(_) => false;
+  State<_FloatingNeonOrb> createState() => _FloatingNeonOrbState();
 }
 
-// ✂️ Jagged Image Clipper for character cutouts
-class _JaggedImageClipper extends CustomClipper<Path> {
-  @override
-  Path getClip(Size size) {
-    final path = Path();
-    path.moveTo(0, 20);
-    // Create jagged left edge
-    for (var i = 0; i < size.height - 20; i += 15) {
-      final offset = (i ~/ 15) % 2 == 0 ? 8 : -8;
-      path.lineTo(offset.toDouble(), 20 + i.toDouble());
-    }
-    path.lineTo(size.width, size.height);
-    path.lineTo(size.width, 0);
-    path.close();
-    return path;
-  }
-
-  @override
-  bool shouldReclip(_) => false;
-}
-
-// ⚡ Glitch Text Effect Widget
-class _GlitchText extends StatefulWidget {
-  final String text;
-  final double fontSize;
-  final Color color;
-  final Color glowColor;
-
-  const _GlitchText({
-    required this.text,
-    required this.fontSize,
-    required this.color,
-    required this.glowColor,
-  });
-
-  @override
-  State<_GlitchText> createState() => _GlitchTextState();
-}
-
-class _GlitchTextState extends State<_GlitchText>
+class _FloatingNeonOrbState extends State<_FloatingNeonOrb>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
@@ -541,8 +338,138 @@ class _GlitchTextState extends State<_GlitchText>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 2000),
       vsync: this,
+      duration: Duration(milliseconds: 3000 + widget.index * 500),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rng = math.Random(widget.index);
+    final left = rng.nextDouble() * 0.8 + 0.1;
+    final top = rng.nextDouble() * 0.6 + 0.2;
+    final size = 30.0 + rng.nextDouble() * 50;
+
+    final colors = [
+      HomeScreen._cyanBlast,
+      HomeScreen._hotPink,
+      HomeScreen._electricPurple,
+      HomeScreen._acidGreen,
+      HomeScreen._laserRed,
+      HomeScreen._solarYellow,
+    ];
+    final color = colors[widget.index % colors.length];
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final offset = math.sin(_controller.value * 2 * math.pi) * 20;
+        final scale = 0.8 + math.sin(_controller.value * math.pi) * 0.2;
+
+        return Positioned(
+          left: left * MediaQuery.of(context).size.width - size / 2,
+          top: (top * MediaQuery.of(context).size.height - size / 2) + offset,
+          child: Transform.scale(
+            scale: scale,
+            child: Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    color.withOpacity(0.8),
+                    color.withOpacity(0.3),
+                    Colors.transparent,
+                  ],
+                  stops: const [0.0, 0.4, 1.0],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.6),
+                    blurRadius: 30,
+                    spreadRadius: 5,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+//   COMIC ISSUE BADGE                                            
+class _ComicIssueBadge extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Transform.rotate(
+      angle: -0.05,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: HomeScreen._solarYellow,
+          border: Border.all(color: HomeScreen._voidBlack, width: 3),
+          boxShadow: [
+            BoxShadow(
+              color: HomeScreen._solarYellow.withOpacity(0.5),
+              blurRadius: 15,
+              spreadRadius: 2,
+            ),
+            BoxShadow(
+              color: HomeScreen._voidBlack,
+              offset: const Offset(3, 3),
+              blurRadius: 0,
+            ),
+          ],
+        ),
+        child: Text(
+          "ISSUE #001",
+          style: TextStyle(
+            color: HomeScreen._voidBlack,
+            fontSize: 11,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2,
+            fontFamily: 'Courier',
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+//   NEON GLITCH TITLE                                            
+class _NeonGlitchTitle extends StatefulWidget {
+  final String text;
+  final double fontSize;
+
+  const _NeonGlitchTitle({
+    required this.text,
+    required this.fontSize,
+  });
+
+  @override
+  State<_NeonGlitchTitle> createState() => _NeonGlitchTitleState();
+}
+
+class _NeonGlitchTitleState extends State<_NeonGlitchTitle>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
     )..repeat();
   }
 
@@ -557,50 +484,65 @@ class _GlitchTextState extends State<_GlitchText>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
-        final glitchOffset = math.sin(_controller.value * 6.28 * 3) * 2;
+        final glitch = math.sin(_controller.value * 10) * 3;
+        final glitch2 = math.cos(_controller.value * 15) * 2;
+
         return Stack(
           children: [
-            // Red channel offset
+            // Chromatic aberration - Red channel
             Positioned(
-              left: glitchOffset,
+              left: glitch,
+              top: 0,
               child: Text(
                 widget.text,
                 style: TextStyle(
                   fontSize: widget.fontSize,
                   fontWeight: FontWeight.w900,
-                  color: Colors.red.withOpacity(0.7),
-                  letterSpacing: 4,
+                  color: HomeScreen._laserRed.withOpacity(0.7),
+                  letterSpacing: 6,
                   fontFamily: 'BebasNeue',
                 ),
               ),
             ),
-            // Cyan channel offset
+            // Chromatic aberration - Cyan channel
             Positioned(
-              left: -glitchOffset,
+              left: -glitch,
+              top: glitch2,
               child: Text(
                 widget.text,
                 style: TextStyle(
                   fontSize: widget.fontSize,
                   fontWeight: FontWeight.w900,
-                  color: widget.glowColor.withOpacity(0.7),
-                  letterSpacing: 4,
+                  color: HomeScreen._cyanBlast.withOpacity(0.7),
+                  letterSpacing: 6,
                   fontFamily: 'BebasNeue',
                 ),
               ),
             ),
-            // Main text
+            // Main text with neon glow
             Text(
               widget.text,
               style: TextStyle(
                 fontSize: widget.fontSize,
                 fontWeight: FontWeight.w900,
-                color: widget.color,
-                letterSpacing: 4,
+                color: HomeScreen._whiteOut,
+                letterSpacing: 6,
                 fontFamily: 'BebasNeue',
                 shadows: [
                   Shadow(
-                    color: widget.glowColor.withOpacity(0.5),
-                    blurRadius: 10,
+                    color: HomeScreen._hotPink,
+                    blurRadius: 20,
+                    offset: const Offset(0, 0),
+                  ),
+                  Shadow(
+                    color: HomeScreen._cyanBlast.withOpacity(0.8),
+                    blurRadius: 40,
+                    offset: const Offset(0, 0),
+                  ),
+                  Shadow(
+                    color: HomeScreen._electricPurple,
+                    blurRadius: 60,
+                    offset: const Offset(0, 0),
                   ),
                 ],
               ),
@@ -610,4 +552,643 @@ class _GlitchTextState extends State<_GlitchText>
       },
     );
   }
+}
+
+
+//   TYPEWRITER SUBTITLE                                          
+class _TypewriterSubtitle extends StatefulWidget {
+  final String text;
+  const _TypewriterSubtitle({required this.text});
+
+  @override
+  State<_TypewriterSubtitle> createState() => _TypewriterSubtitleState();
+}
+
+class _TypewriterSubtitleState extends State<_TypewriterSubtitle>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _cursorController;
+
+  @override
+  void initState() {
+    super.initState();
+    _cursorController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _cursorController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Transform.rotate(
+          angle: 0.02,
+          child: Text(
+            widget.text,
+            style: TextStyle(
+              color: HomeScreen._cyanBlast,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 3,
+              fontFamily: 'Courier',
+              shadows: [
+                Shadow(
+                  color: HomeScreen._cyanBlast.withOpacity(0.8),
+                  blurRadius: 10,
+                ),
+              ],
+            ),
+          ),
+        ),
+        AnimatedBuilder(
+          animation: _cursorController,
+          builder: (context, child) {
+            return Opacity(
+              opacity: _cursorController.value,
+              child: Container(
+                width: 8,
+                height: 14,
+                margin: const EdgeInsets.only(left: 4),
+                color: HomeScreen._acidGreen,
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+
+//   NEON QUOTE BOX                                               
+class _NeonQuoteBox extends StatefulWidget {
+  @override
+  State<_NeonQuoteBox> createState() => _NeonQuoteBoxState();
+}
+
+class _NeonQuoteBoxState extends State<_NeonQuoteBox>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _glowController;
+
+  @override
+  void initState() {
+    super.initState();
+    _glowController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _glowController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _glowController,
+      builder: (context, child) {
+        final glowIntensity = 0.5 + _glowController.value * 0.5;
+
+        return Transform.rotate(
+          angle: -0.02,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  HomeScreen._deepVoid.withOpacity(0.9),
+                  HomeScreen._voidBlack.withOpacity(0.95),
+                ],
+              ),
+              border: Border.all(
+                color: HomeScreen._cyanBlast.withOpacity(glowIntensity),
+                width: 2,
+              ),
+              borderRadius: BorderRadius.circular(4),
+              boxShadow: [
+                BoxShadow(
+                  color: HomeScreen._cyanBlast.withOpacity(0.3 * glowIntensity),
+                  blurRadius: 20,
+                  spreadRadius: 2,
+                ),
+                BoxShadow(
+                  color: HomeScreen._hotPink.withOpacity(0.2 * glowIntensity),
+                  blurRadius: 30,
+                  spreadRadius: -5,
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                // Pulsing accent bar
+                Container(
+                  width: 4,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        HomeScreen._solarYellow,
+                        HomeScreen._hotPink,
+                      ],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: HomeScreen._hotPink.withOpacity(glowIntensity),
+                        blurRadius: 10,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "⚡ SYSTEM ALERT",
+                        style: TextStyle(
+                          color: HomeScreen._acidGreen,
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2,
+                          fontFamily: 'Courier',
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "Daily streak ready. Execute habits to power up! 🚀",
+                        style: TextStyle(
+                          color: HomeScreen._ghostWhite,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Animated lightning icon
+                Icon(
+                  Icons.bolt,
+                  color: HomeScreen._solarYellow.withOpacity(glowIntensity),
+                  size: 28,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+
+//   HERO GIF ZONE - Perfect for your uploaded GIF!               
+class _HeroGifZone extends StatelessWidget {
+  final String? gifAssetPath;
+  final AnimationController floatController;
+
+  const _HeroGifZone({
+    this.gifAssetPath,
+    required this.floatController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 340,
+      child: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          // Background glow behind GIF
+          Positioned(
+            bottom: 20,
+            child: AnimatedBuilder(
+              animation: floatController,
+              builder: (context, child) {
+                final scale = 1 + math.sin(floatController.value * math.pi) * 0.1;
+                return Transform.scale(
+                  scale: scale,
+                  child: Container(
+                    width: 400,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
+                        colors: [
+                          HomeScreen._hotPink.withOpacity(0.4),
+                          HomeScreen._electricPurple.withOpacity(0.2),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          // GIF Container with comic book frame
+          AnimatedBuilder(
+            animation: floatController,
+            builder: (context, child) {
+              final offset = math.sin(floatController.value * 2 * math.pi) * 8;
+
+              return Transform.translate(
+                offset: Offset(0, offset),
+                child: Container(
+                  width: 380,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    // Comic book panel border
+                    border: Border.all(
+                      color: HomeScreen._whiteOut,
+                      width: 3,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      // Neon glow
+                      BoxShadow(
+                        color: HomeScreen._cyanBlast.withOpacity(0.5),
+                        blurRadius: 30,
+                        spreadRadius: 5,
+                      ),
+                      // Hard shadow for comic effect
+                      BoxShadow(
+                        color: HomeScreen._voidBlack,
+                        offset: const Offset(8, 8),
+                        blurRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(5),
+                    child: gifAssetPath != null
+                        ? Image.asset(
+                            gifAssetPath!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return _PlaceholderCharacter();
+                            },
+                          )
+                        : _PlaceholderCharacter(),
+                  ),
+                ),
+              );
+            },
+          ),
+
+          // Floating comic elements around GIF
+          Positioned(
+            top: 10,
+            right: 20,
+            child: _ComicBurst(text: "POW!"),
+          ),
+          Positioned(
+            bottom: 40,
+            left: 10,
+            child: _ComicBurst(text: "ZAP!"),
+          ),
+
+          // Halftone overlay on GIF area
+          Positioned(
+            bottom: 0,
+            child: IgnorePointer(
+              child: Container(
+                width: 180,
+                height: 200,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      HomeScreen._electricPurple.withOpacity(0.2),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+//   PLACEHOLDER CHARACTER (shown when no GIF)                    
+class _PlaceholderCharacter extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            HomeScreen._hotPink.withOpacity(0.6),
+            HomeScreen._electricPurple.withOpacity(0.4),
+            HomeScreen._cyanBlast.withOpacity(0.3),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.auto_fix_high,
+              color: HomeScreen._whiteOut.withOpacity(0.8),
+              size: 50,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "ADD GIF",
+              style: TextStyle(
+                color: HomeScreen._whiteOut.withOpacity(0.8),
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 2,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+//   COMIC BURST EFFECT                                           
+class _ComicBurst extends StatelessWidget {
+  final String text;
+  const _ComicBurst({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.rotate(
+      angle: math.Random().nextDouble() * 0.4 - 0.2,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: HomeScreen._solarYellow,
+          border: Border.all(color: HomeScreen._voidBlack, width: 2),
+          borderRadius: BorderRadius.circular(4),
+          boxShadow: [
+            BoxShadow(
+              color: HomeScreen._voidBlack,
+              offset: const Offset(2, 2),
+              blurRadius: 0,
+            ),
+          ],
+        ),
+        child: Text(
+          text,
+          style: TextStyle(
+            color: HomeScreen._voidBlack,
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            fontFamily: 'BebasNeue',
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+//   NEON BUTTON ROW                                              
+class _NeonButtonRow extends StatelessWidget {
+  final Function(int) onNavigate;
+  const _NeonButtonRow({required this.onNavigate});
+
+  @override
+  Widget build(BuildContext context) {
+    final buttons = [
+      _ButtonData(
+        icon: Icons.dashboard_rounded,
+        label: "DASH",
+        color: HomeScreen._laserRed,
+        index: 1,
+      ),
+      _ButtonData(
+        icon: Icons.flag_rounded,
+        label: "QUESTS",
+        color: HomeScreen._electricPurple,
+        index: 2,
+      ),
+      _ButtonData(
+        icon: Icons.location_city_rounded,
+        label: "CITY",
+        color: HomeScreen._cyanBlast,
+        index: 3,
+      ),
+      _ButtonData(
+        icon: Icons.person_rounded,
+        label: "HERO",
+        color: HomeScreen._hotPink,
+        index: 4,
+      ),
+    ];
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: buttons.map((b) => _NeonButton(
+        data: b,
+        onTap: () => onNavigate(b.index),
+      )).toList(),
+    );
+  }
+}
+
+class _ButtonData {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final int index;
+
+  _ButtonData({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.index,
+  });
+}
+
+class _NeonButton extends StatefulWidget {
+  final _ButtonData data;
+  final VoidCallback onTap;
+
+  const _NeonButton({required this.data, required this.onTap});
+
+  @override
+  State<_NeonButton> createState() => _NeonButtonState();
+}
+
+class _NeonButtonState extends State<_NeonButton>
+    with SingleTickerProviderStateMixin {
+  bool _pressed = false;
+  late AnimationController _glowController;
+
+  @override
+  void initState() {
+    super.initState();
+    _glowController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _glowController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _glowController,
+      builder: (context, child) {
+        final glowIntensity = 0.6 + _glowController.value * 0.4;
+
+        return GestureDetector(
+          onTapDown: (_) => setState(() => _pressed = true),
+          onTapUp: (_) {
+            setState(() => _pressed = false);
+            widget.onTap();
+          },
+          onTapCancel: () => setState(() => _pressed = false),
+          child: Transform.rotate(
+            angle: _pressed ? 0.03 : -0.03,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 100),
+              transform: Matrix4.translationValues(0, _pressed ? 4 : 0, 0),
+              decoration: BoxDecoration(
+                color: widget.data.color,
+                border: Border.all(
+                  color: HomeScreen._whiteOut,
+                  width: _pressed ? 2 : 3,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  // Neon glow
+                  BoxShadow(
+                    color: widget.data.color.withOpacity(glowIntensity),
+                    blurRadius: 20,
+                    spreadRadius: _pressed ? 2 : 4,
+                  ),
+                  // Hard brutalist shadow
+                  BoxShadow(
+                    color: HomeScreen._voidBlack,
+                    offset: Offset(_pressed ? 0 : 5, _pressed ? 0 : 5),
+                    blurRadius: 0,
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      widget.data.icon,
+                      color: HomeScreen._voidBlack,
+                      size: 24,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.data.label,
+                      style: TextStyle(
+                        color: HomeScreen._voidBlack,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.5,
+                        fontFamily: 'BebasNeue',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+//   CRT SCANLINE OVERLAY                                         
+class _CRTPainter extends CustomPainter {
+  final double scanPosition;
+
+  _CRTPainter({required this.scanPosition});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Scanline gradient
+    final scanY = scanPosition * size.height;
+
+    // Horizontal scanlines
+    final linePaint = Paint()
+      ..color = HomeScreen._voidBlack.withOpacity(0.1);
+
+    for (double y = 0; y < size.height; y += 4) {
+      canvas.drawRect(
+        Rect.fromLTWH(0, y, size.width, 2),
+        linePaint,
+      );
+    }
+
+    // Moving scan beam
+    final beamGradient = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        Colors.transparent,
+        HomeScreen._cyanBlast.withOpacity(0.1),
+        HomeScreen._cyanBlast.withOpacity(0.2),
+        HomeScreen._cyanBlast.withOpacity(0.1),
+        Colors.transparent,
+      ],
+    );
+
+    canvas.drawRect(
+      Rect.fromLTWH(0, scanY - 50, size.width, 100),
+      Paint()..shader = beamGradient.createShader(
+        Rect.fromLTWH(0, scanY - 50, size.width, 100),
+      ),
+    );
+
+    // Vignette corners
+    final vignettePaint = Paint()
+      ..color = HomeScreen._voidBlack.withOpacity(0.3);
+
+    // Top vignette
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, 60),
+      Paint()..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          HomeScreen._voidBlack.withOpacity(0.5),
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, 60)),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _CRTPainter oldDelegate) => true;
 }
