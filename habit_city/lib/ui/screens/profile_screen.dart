@@ -22,9 +22,9 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 2. Fetch real data from AppState
-    final appState = context.watch<AppState>();
-    final xp = appState.xp;
+    // 2. Fetch real data from GameEngine
+    final GameEngine = context.watch<GameEngine>();
+    final xp = GameEngine.xp;
     final level = (xp ~/ 100) + 1;
 
     return Scaffold(

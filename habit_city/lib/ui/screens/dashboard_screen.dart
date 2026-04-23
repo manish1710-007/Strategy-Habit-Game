@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/habit.dart';
 import '../../services/storage_service.dart';
-import '../../core/app_state.dart';
+import '../../core/game_engine.dart';
 import '../widgets/habit_card.dart';
 import '../widgets/particle_burst.dart';
 import '../widgets/waifu_character.dart';
@@ -80,11 +80,9 @@ class _DashboardScreenState extends State<DashboardScreen>
   void completeHabit(Habit habit, Offset position) {
     if (habit.completed) return;
 
-    final appState = context.read<AppState>();
-    final oldLevel = appState.completeHabit(
-      difficulty: habit.difficulty,
-      habitTag: "GENERAL", // wire habit.tag here when you add tags to Habit model
-    );
+    final engine = context.read<GameEngine>();
+    final oldLevel = engine.level;          // <-- capture BEFORE completing
+    engine.completeActivity(habit.id, habit.difficulty);
 
     setState(() {
       habit.completed  = true;
@@ -104,9 +102,9 @@ class _DashboardScreenState extends State<DashboardScreen>
 
     box.put(habit.id, habit.toMap());
 
-    if (appState.level > oldLevel) {
+    if (engine.level > oldLevel) {          // <-- use instance, not static
       setState(() => mood = WaifuMood.excited);
-      _showLevelUpDialog(appState.level);
+      _showLevelUpDialog(engine.level);
     }
   }
 
@@ -304,7 +302,7 @@ class _DashboardScreenState extends State<DashboardScreen>
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
+    final engine = context.watch<GameEngine>();
 
     return Scaffold(
       backgroundColor: _black,
@@ -404,7 +402,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                         border: Border.all(color: _neonBlue.withOpacity(0.4), width: 1),
                       ),
                       child: Text(
-                        "LV.${appState.level} · ${appState.xp} XP",
+                        "LV.${engine.level} · ${engine.xp} XP",
                         style: const TextStyle(
                           color: _neonBlue,
                           fontSize: 10,
@@ -472,13 +470,13 @@ class _DashboardScreenState extends State<DashboardScreen>
               children: [
                 //  Live header 
                 _DashboardHeader(
-                  energy: appState.energy,
-                  xp: appState.xp,
-                  level: appState.level,
-                  currentXP: appState.currentXP,
-                  xpProgress: appState.xpProgress,
-                  rank: appState.rankLabel,
-                  completedHabits: appState.completedHabits,
+                  energy: engine.energy,
+                  xp: engine.xp,
+                  level: engine.level,
+                  currentXP: engine.currentXP,
+                  xpProgress: engine.xpProgress,
+                  rank: engine.rankLabel,
+                  completedHabits: engine.completedHabits,
                   mood: mood,
                 ),
 
@@ -573,7 +571,7 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 }
 
-//  Dashboard Header — reads live from AppState 
+//  Dashboard Header — reads live from GameEngine 
 class _DashboardHeader extends StatelessWidget {
   final int energy;
   final int xp;

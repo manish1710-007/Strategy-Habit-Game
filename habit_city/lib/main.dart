@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 // Services
 import 'services/storage_service.dart';
+
+// Core
+import 'core/game_engine.dart';
+import 'services/city_service.dart';
+import 'core/game_engine.dart';
 
 // Screens
 import 'ui/screens/home_screen.dart';
@@ -9,16 +15,25 @@ import 'ui/screens/dashboard_screen.dart';
 import 'ui/screens/missions_screen.dart';
 import 'ui/screens/city_screen.dart';
 import 'ui/screens/profile_screen.dart';
-import 'package:provider/provider.dart';
-import 'core/app_state.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await StorageService.init();
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => AppState(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => GameEngine()),
+
+        ChangeNotifierProxyProvider<GameEngine, CityProgressionService>(
+          create: (context) =>
+              CityProgressionService(context.read<GameEngine>()),
+          update: (_, engine, service) {
+              service ??= CityProgressionService(engine);
+              return service;
+          },
+        ),
+      ],
       child: const HabitQuestApp(),
     ),
   );
@@ -34,7 +49,6 @@ class HabitQuestApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: _buildTheme(),
       home: const MainNavigation(),
-
     );
   }
 
@@ -59,18 +73,11 @@ class HabitQuestApp extends StatelessWidget {
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
       ),
-      cardTheme: CardThemeData(
-        color: const Color(0xFF1A1A24),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: Color(0xFF2A2A35)),
-        ),
-      ),
     );
   }
 }
 
-//  MAIN NAVIGATION
+// 🧭 NAVIGATION
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
 
@@ -81,23 +88,12 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
 
-  //  Navigation handler
   void switchTab(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+    setState(() => _currentIndex = index);
   }
 
   void _onTabChange(int index) {
-    // Bottom nav maps to:
-    // 0 -> Dashboard
-    // 1 -> Missions
-    // 2 -> City
-    // 3 -> Profile
-    // IndexedStack indices: 0: Home, 1: Dashboard, 2: Missions, 3: City, 4: Profile
-    setState(() {
-      _currentIndex = index + 1; // shift because Home is index 0
-    });
+    setState(() => _currentIndex = index + 1);
   }
 
   @override
@@ -106,21 +102,16 @@ class _MainNavigationState extends State<MainNavigation> {
       body: IndexedStack(
         index: _currentIndex,
         children: [
-          HomeScreen(
-            gifAssetPath: 'assets/hatsune miku .gif',
-            onNavigate: switchTab,
-          ),// Index 0
-          DashboardScreen(onNavigate: switchTab), // Index 1
-          MissionsScreen(onNavigate: switchTab),  // Index 2
-          CityScreen(onNavigate: switchTab),      // Index 3
-          ProfileScreen(onNavigate: switchTab),   // Index 4
+          HomeScreen(onNavigate: switchTab),
+          DashboardScreen(onNavigate: switchTab),
+          MissionsScreen(onNavigate: switchTab),
+          CityScreen(onNavigate: switchTab),
+          ProfileScreen(onNavigate: switchTab),
         ],
       ),
-      
-      //  CONDITIONAL BOTTOM BAR 
-      // Hide the bottom bar if we are on HomeScreen (index 0)
-      bottomNavigationBar: _currentIndex == 0 
-          ? null 
+
+      bottomNavigationBar: _currentIndex == 0
+          ? null
           : BottomNavigationBar(
               currentIndex: _currentIndex - 1,
               onTap: _onTabChange,

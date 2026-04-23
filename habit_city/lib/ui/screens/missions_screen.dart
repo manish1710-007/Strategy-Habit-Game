@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_city/core/game_engine.dart';
 
 class MissionsScreen extends StatefulWidget {
   final Function(int) onNavigate;
@@ -11,6 +12,33 @@ class MissionsScreen extends StatefulWidget {
   @override
   State<MissionsScreen> createState() => _MissionsScreenState();
 }
+
+class _MissionAction extends StatelessWidget {
+  final _MissionData data;
+  final GameEngine gameEngine;
+
+  const _MissionAction({required this.data, required this.gameEngine});
+
+  void _completeMission(BuildContext context) {
+    // Award XP based on difficulty
+    gameEngine.completeActivity(data.title, data.difficulty);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("+${data.difficulty * 10} XP * Streak: ${gameEngine.streakDays}d"),
+        backgroundColor: const Color(0XFF00F0FF),
+        duration: const Duration(seconds: 1),
+      )
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // This helper widget is not shown directly; keep a small placeholder.
+    return const SizedBox.shrink();
+  }
+}
+
 
 class _MissionsScreenState extends State<MissionsScreen> {
   // 🎨 Retro Futuristic Palette (Synced with Dashboard)

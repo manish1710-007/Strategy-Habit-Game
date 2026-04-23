@@ -42,7 +42,7 @@ const List<CityTier> mindEvolutionPath = [
   CityTier(levelThreshold: 20, emoji: "⚡",  title: "Singularity"),
 ];
 
-//  City data model (lives in AppState, not CityScreen) 
+//  City data model (lives in GameEngine, not CityScreen) 
 class CityData extends ChangeNotifier {
   final String name;
   final IconData icon;
@@ -87,8 +87,8 @@ class CityData extends ChangeNotifier {
   }
 }
 
-//  AppState — single source of truth 
-class AppState extends ChangeNotifier {
+//  GameEngine — single source of truth 
+class GameEngine extends ChangeNotifier {
   //  Global player stats 
   int _xp     = 0;
   int _energy = 100;

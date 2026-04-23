@@ -41,7 +41,7 @@ class _CityScreenState extends State<CityScreen>
   }
 
   void _openCity(CityData city) {
-    final appState = context.read<AppState>();
+    final GameEngine = context.read<GameEngine>();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -50,7 +50,7 @@ class _CityScreenState extends State<CityScreen>
         builder: (ctx, setModal) => _CityDetailSheet(
           city: city,
           onTaskComplete: () {
-            appState.addCityXp(city, 25); // ← live, routes through AppState
+            GameEngine.addCityXp(city, 25); // ← live, routes through GameEngine
             setModal(() {});
           },
         ),
@@ -59,14 +59,14 @@ class _CityScreenState extends State<CityScreen>
   }
 
   void _addNewCity() {
-    final appState = context.read<AppState>();
+    final GameEngine = context.read<GameEngine>();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (_) => _NewCitySheet(
         onAdd: (city) {
-          appState.addCity(city); // ← AppState owns the list
+          GameEngine.addCity(city); // ← GameEngine owns the list
           Navigator.pop(context);
         },
       ),
@@ -75,7 +75,7 @@ class _CityScreenState extends State<CityScreen>
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>(); // ← rebuilds on any XP change
+    final GameEngine = context.watch<GameEngine>(); // ← rebuilds on any XP change
 
     return Scaffold(
       backgroundColor: _black,
@@ -129,7 +129,7 @@ class _CityScreenState extends State<CityScreen>
                       border: Border.all(color: _neonBlue.withOpacity(0.5), width: 1),
                     ),
                     child: Text(
-                      "${appState.cities.length} DISTRICTS",
+                      "${GameEngine.cities.length} DISTRICTS",
                       style: const TextStyle(
                         color: _neonBlue,
                         fontSize: 10,
@@ -153,9 +153,9 @@ class _CityScreenState extends State<CityScreen>
             slivers: [
               SliverToBoxAdapter(
                 child: _CitySkylineBanner(
-                  totalCities: appState.cities.length,
-                  avgLevel: appState.avgCityLevel,   // ← LIVE
-                  totalXp: appState.totalCityXp,     // ← LIVE
+                  totalCities: GameEngine.cities.length,
+                  avgLevel: GameEngine.avgCityLevel,   // ← LIVE
+                  totalXp: GameEngine.totalCityXp,     // ← LIVE
                   pulseAnim: _pulseAnim,
                 ),
               ),
@@ -216,12 +216,12 @@ class _CityScreenState extends State<CityScreen>
                     (context, index) => AnimatedBuilder(
                       animation: _pulseAnim,
                       builder: (_, __) => _CityTile(
-                        data: appState.cities[index],  // ← from AppState
+                        data: GameEngine.cities[index],  // ← from GameEngine
                         pulseValue: _pulseAnim.value,
-                        onTap: () => _openCity(appState.cities[index]),
+                        onTap: () => _openCity(GameEngine.cities[index]),
                       ),
                     ),
-                    childCount: appState.cities.length,
+                    childCount: GameEngine.cities.length,
                   ),
                 ),
               ),
@@ -347,7 +347,7 @@ class _CitySkylineBanner extends StatelessWidget {
   }
 }
 
-//  City detail sheet — calls appState.addCityXp 
+//  City detail sheet — calls GameEngine.addCityXp 
 class _CityDetailSheet extends StatelessWidget {
   final CityData city;
   final VoidCallback onTaskComplete;
@@ -518,7 +518,7 @@ class _CityDetailSheet extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // Execute task button — wired to AppState
+          // Execute task button — wired to GameEngine
           GestureDetector(
             onTap: onTaskComplete,
             child: Container(
